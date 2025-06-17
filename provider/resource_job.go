@@ -3,8 +3,10 @@ package provider
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/plain-insure/terraform-provider-cron-job.org/client"
 )
 
@@ -16,14 +18,23 @@ func resourceJob() *schema.Resource {
 		Delete: resourceJobDelete,
 		Schema: map[string]*schema.Schema{
 			"title": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				Description:  "The title of the cron job",
+				ValidateFunc: validation.StringLenBetween(1, 100),
 			},
 			"url": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The URL to be called by the cron job",
+				ValidateFunc: func(v interface{}, k string) (ws []string, errors []error) {
+					value := v.(string)
+					if _, err := url.ParseRequestURI(value); err != nil {
+						errors = append(errors, fmt.Errorf("%q must be a valid URL: %s", k, err))
+					}
+					return
+				},
 			},
-			// Add more fields as needed
 		},
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/plain-insure/terraform-provider-cron-job.org/client"
 )
 
@@ -15,8 +16,11 @@ func resourceFolder() *schema.Resource {
 		Delete: resourceFolderDelete,
 		Schema: map[string]*schema.Schema{
 			"title": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true, // Folders cannot be updated
+				Description:  "The title of the folder",
+				ValidateFunc: validation.StringLenBetween(1, 100),
 			},
 		},
 	}
