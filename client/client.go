@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -46,7 +47,7 @@ func (c *Client) DoRequest(method, path string, body interface{}) (*http.Respons
 		bodyReader = bytes.NewReader([]byte{})
 	}
 
-	req, err := http.NewRequest(method, c.BaseURL+path, bodyReader)
+	req, err := http.NewRequestWithContext(context.Background(), method, c.BaseURL+path, bodyReader)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}

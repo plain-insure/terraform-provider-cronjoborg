@@ -63,7 +63,9 @@ func resourceFolderRead(d *schema.ResourceData, m interface{}) error {
 	for _, folder := range result.Folders {
 		id := fmt.Sprintf("%v", folder["folderId"])
 		if id == d.Id() {
-			d.Set("title", folder["title"])
+			if err := d.Set("title", folder["title"]); err != nil {
+				return fmt.Errorf("error setting title: %w", err)
+			}
 			return nil
 		}
 	}

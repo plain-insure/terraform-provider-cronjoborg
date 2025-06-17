@@ -76,8 +76,12 @@ func resourceJobRead(d *schema.ResourceData, m interface{}) error {
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return err
 	}
-	d.Set("title", result.JobDetails["title"])
-	d.Set("url", result.JobDetails["url"])
+	if err := d.Set("title", result.JobDetails["title"]); err != nil {
+		return fmt.Errorf("error setting title: %w", err)
+	}
+	if err := d.Set("url", result.JobDetails["url"]); err != nil {
+		return fmt.Errorf("error setting url: %w", err)
+	}
 	return nil
 }
 

@@ -26,13 +26,12 @@ linters:
     - staticcheck
     - bidichk
     - durationcheck
-    - exportloopref
     - gosec
     - noctx
     - nolintlint
     - rowserrcheck
     - sqlclosecheck
-    - tenv
+    - usetesting
     - tparallel
     - unconvert
     - unparam

@@ -59,7 +59,9 @@ func resourceStatusPageRead(d *schema.ResourceData, m interface{}) error {
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return err
 	}
-	d.Set("title", result.StatusPage["title"])
+	if err := d.Set("title", result.StatusPage["title"]); err != nil {
+		return fmt.Errorf("error setting title: %w", err)
+	}
 	return nil
 }
 
