@@ -3,7 +3,6 @@ package client
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
@@ -21,7 +20,8 @@ func NewClient(baseURL, apiKey string) *Client {
 	}
 }
 
-func (c *Client) doRequest(method, path string, body interface{}) (*http.Response, error) {
+// DoRequest performs an HTTP request to the cron-job.org API
+func (c *Client) DoRequest(method, path string, body interface{}) (*http.Response, error) {
 	var bodyReader *bytes.Reader
 	if body != nil {
 		j, err := json.Marshal(body)

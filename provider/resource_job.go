@@ -1,12 +1,11 @@
 package provider
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"cronjob/client"
+	"github.com/plain-insure/terraform-provider-cron-job.org/client"
 )
 
 func resourceJob() *schema.Resource {
@@ -43,7 +42,9 @@ func resourceJobCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 	defer resp.Body.Close()
-	var result struct{ JobId int `json:"jobId"` }
+	var result struct {
+		JobId int `json:"jobId"`
+	}
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return err
 	}
