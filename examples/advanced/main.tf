@@ -92,7 +92,7 @@ locals {
 
 resource "cronjob_job" "microservice_health" {
   for_each = { for idx, endpoint in local.endpoints_to_monitor : idx => endpoint }
-  
+
   title = "${each.value.name} Health Check"
   url   = each.value.url
 }
