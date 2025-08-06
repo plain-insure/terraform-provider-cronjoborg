@@ -1,3 +1,6 @@
+// Copyright (c) HashiCorp, Inc.
+// SPDX-License-Identifier: MPL-2.0
+
 package client
 
 import (
@@ -15,7 +18,7 @@ type Client struct {
 	HTTPClient *http.Client
 }
 
-// APIError represents an error response from the API
+// APIError represents an error response from the API.
 type APIError struct {
 	StatusCode int
 	Message    string
@@ -34,7 +37,7 @@ func NewClient(baseURL, apiKey string) *Client {
 	}
 }
 
-// DoRequest performs an HTTP request to the cron-job.org API
+// DoRequest performs an HTTP request to the cron-job.org API.
 func (c *Client) DoRequest(method, path string, body interface{}) (*http.Response, error) {
 	var bodyReader *bytes.Reader
 	if body != nil {

@@ -1,3 +1,6 @@
+// Copyright (c) HashiCorp, Inc.
+// SPDX-License-Identifier: MPL-2.0
+
 package provider
 
 import (
@@ -27,9 +30,16 @@ func resourceStatusPage() *schema.Resource {
 }
 
 func resourceStatusPageCreate(d *schema.ResourceData, m interface{}) error {
-	c := m.(*client.Client)
+	c, ok := m.(*client.Client)
+	if !ok {
+		return fmt.Errorf("expected *client.Client, got %T", m)
+	}
+	title, ok := d.Get("title").(string)
+	if !ok {
+		return fmt.Errorf("title must be a string")
+	}
 	reqBody := map[string]interface{}{
-		"title": d.Get("title").(string),
+		"title": title,
 	}
 	resp, err := c.DoRequest("PUT", "/statuspages", reqBody)
 	if err != nil {
@@ -47,7 +57,10 @@ func resourceStatusPageCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceStatusPageRead(d *schema.ResourceData, m interface{}) error {
-	c := m.(*client.Client)
+	c, ok := m.(*client.Client)
+	if !ok {
+		return fmt.Errorf("expected *client.Client, got %T", m)
+	}
 	resp, err := c.DoRequest("GET", fmt.Sprintf("/statuspages/%s", d.Id()), nil)
 	if err != nil {
 		return err
@@ -66,7 +79,10 @@ func resourceStatusPageRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceStatusPageDelete(d *schema.ResourceData, m interface{}) error {
-	c := m.(*client.Client)
+	c, ok := m.(*client.Client)
+	if !ok {
+		return fmt.Errorf("expected *client.Client, got %T", m)
+	}
 	reqBody := map[string]interface{}{
 		"statusPageId": d.Id(),
 	}

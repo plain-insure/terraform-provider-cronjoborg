@@ -1,3 +1,6 @@
+// Copyright (c) HashiCorp, Inc.
+// SPDX-License-Identifier: MPL-2.0
+
 package provider
 
 import (
@@ -36,8 +39,14 @@ func Provider() *schema.Provider {
 }
 
 func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-	apiUrl := d.Get("api_url").(string)
-	apiKey := d.Get("api_key").(string)
+	apiUrl, ok := d.Get("api_url").(string)
+	if !ok {
+		return nil, diag.Errorf("api_url must be a string")
+	}
+	apiKey, ok := d.Get("api_key").(string)
+	if !ok {
+		return nil, diag.Errorf("api_key must be a string")
+	}
 	if apiKey == "" {
 		apiKey = os.Getenv("CRON_JOB_API_KEY")
 	}

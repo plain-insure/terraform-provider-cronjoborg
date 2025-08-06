@@ -1,3 +1,6 @@
+// Copyright (c) HashiCorp, Inc.
+// SPDX-License-Identifier: MPL-2.0
+
 package provider
 
 import (
@@ -28,7 +31,11 @@ func resourceJob() *schema.Resource {
 				Required:    true,
 				Description: "The URL to be called by the cron job",
 				ValidateFunc: func(v interface{}, k string) (ws []string, errors []error) {
-					value := v.(string)
+					value, ok := v.(string)
+					if !ok {
+						errors = append(errors, fmt.Errorf("%q must be a string", k))
+						return
+					}
 					if _, err := url.ParseRequestURI(value); err != nil {
 						errors = append(errors, fmt.Errorf("%q must be a valid URL: %s", k, err))
 					}
@@ -40,10 +47,21 @@ func resourceJob() *schema.Resource {
 }
 
 func resourceJobCreate(d *schema.ResourceData, m interface{}) error {
-	c := m.(*client.Client)
+	c, ok := m.(*client.Client)
+	if !ok {
+		return fmt.Errorf("expected *client.Client, got %T", m)
+	}
+	title, ok := d.Get("title").(string)
+	if !ok {
+		return fmt.Errorf("title must be a string")
+	}
+	url, ok := d.Get("url").(string)
+	if !ok {
+		return fmt.Errorf("url must be a string")
+	}
 	job := map[string]interface{}{
-		"title": d.Get("title").(string),
-		"url":   d.Get("url").(string),
+		"title": title,
+		"url":   url,
 	}
 	reqBody := map[string]interface{}{
 		"job": job,
@@ -64,7 +82,10 @@ func resourceJobCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceJobRead(d *schema.ResourceData, m interface{}) error {
-	c := m.(*client.Client)
+	c, ok := m.(*client.Client)
+	if !ok {
+		return fmt.Errorf("expected *client.Client, got %T", m)
+	}
 	resp, err := c.DoRequest("GET", fmt.Sprintf("/jobs/%s", d.Id()), nil)
 	if err != nil {
 		return err
@@ -86,10 +107,21 @@ func resourceJobRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceJobUpdate(d *schema.ResourceData, m interface{}) error {
-	c := m.(*client.Client)
+	c, ok := m.(*client.Client)
+	if !ok {
+		return fmt.Errorf("expected *client.Client, got %T", m)
+	}
+	title, ok := d.Get("title").(string)
+	if !ok {
+		return fmt.Errorf("title must be a string")
+	}
+	url, ok := d.Get("url").(string)
+	if !ok {
+		return fmt.Errorf("url must be a string")
+	}
 	job := map[string]interface{}{
-		"title": d.Get("title").(string),
-		"url":   d.Get("url").(string),
+		"title": title,
+		"url":   url,
 	}
 	reqBody := map[string]interface{}{
 		"jobId": d.Id(),
@@ -103,7 +135,10 @@ func resourceJobUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceJobDelete(d *schema.ResourceData, m interface{}) error {
-	c := m.(*client.Client)
+	c, ok := m.(*client.Client)
+	if !ok {
+		return fmt.Errorf("expected *client.Client, got %T", m)
+	}
 	reqBody := map[string]interface{}{
 		"jobId": d.Id(),
 	}
