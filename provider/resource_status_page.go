@@ -1,12 +1,12 @@
 package provider
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"cronjob/client"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/plain-insure/terraform-provider-cron-job.org/client"
 )
 
 func resourceStatusPage() *schema.Resource {
@@ -16,8 +16,11 @@ func resourceStatusPage() *schema.Resource {
 		Delete: resourceStatusPageDelete,
 		Schema: map[string]*schema.Schema{
 			"title": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true, // Status pages cannot be updated
+				Description:  "The title of the status page",
+				ValidateFunc: validation.StringLenBetween(1, 100),
 			},
 		},
 	}
@@ -33,7 +36,9 @@ func resourceStatusPageCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 	defer resp.Body.Close()
-	var result struct{ StatusPageId int `json:"statusPageId"` }
+	var result struct {
+		StatusPageId int `json:"statusPageId"`
+	}
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return err
 	}
@@ -54,7 +59,9 @@ func resourceStatusPageRead(d *schema.ResourceData, m interface{}) error {
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return err
 	}
-	d.Set("title", result.StatusPage["title"])
+	if err := d.Set("title", result.StatusPage["title"]); err != nil {
+		return fmt.Errorf("error setting title: %w", err)
+	}
 	return nil
 }
 

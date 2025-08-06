@@ -1,0 +1,31 @@
+terraform {
+  required_providers {
+    cronjob = {
+      source  = "plain-insure/cronjob"
+      version = "~> 1.0"
+    }
+  }
+}
+
+provider "cronjob" {
+  api_url = "https://api.cron-job.org/"
+  # api_key can be set via CRON_JOB_API_KEY environment variable
+  # api_key = var.cron_job_api_key
+}
+
+# Create a folder to organize jobs
+resource "cronjob_folder" "monitoring" {
+  title = "Monitoring Jobs"
+}
+
+# Create a simple cron job
+resource "cronjob_job" "health_check" {
+  title = "Health Check"
+  url   = "https://example.com/health"
+  # Add more configuration as needed
+}
+
+# Create a status page
+resource "cronjob_status_page" "example" {
+  title = "Example Status Page"
+}

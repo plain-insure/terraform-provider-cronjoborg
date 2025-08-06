@@ -1,0 +1,46 @@
+run:
+  timeout: 5m
+  go: "1.21"
+
+issues:
+  exclude-rules:
+    # Exclude some linters from running on tests files.
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - errcheck
+        - dupl
+        - gosec
+        - funlen
+
+linters:
+  enable:
+    - gofmt
+    - goimports
+    - govet
+    - ineffassign
+    - misspell
+    - unconvert
+    - typecheck
+    - unused
+    - staticcheck
+    - bidichk
+    - durationcheck
+    - gosec
+    - noctx
+    - nolintlint
+    - rowserrcheck
+    - sqlclosecheck
+    - usetesting
+    - tparallel
+    - unconvert
+    - unparam
+    - wastedassign
+
+linters-settings:
+  govet:
+    enable:
+      - shadow
+  staticcheck:
+    checks:
+      - "all"

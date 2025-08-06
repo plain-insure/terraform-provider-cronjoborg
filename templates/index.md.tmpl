@@ -1,0 +1,17 @@
+---
+page_title: "Provider: {{.ProviderShortName}}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.ProviderShortName}} Provider
+
+{{ .Description | trimspace }}
+
+Use the navigation to the left to read about the available resources.
+
+## Example Usage
+
+{{ tffile "examples/basic/main.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
