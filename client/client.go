@@ -37,8 +37,44 @@ func NewClient(baseURL, apiKey string) *Client {
 	}
 }
 
-// DoRequest performs an HTTP request to the cron-job.org API.
-func (c *Client) DoRequest(method, path string, body interface{}) (*http.Response, error) {
+// Job represents a cron job from the API.
+type Job struct {
+	JobID         int    `json:"jobId"`
+	Title         string `json:"title"`
+	URL           string `json:"url"`
+	Enabled       bool   `json:"enabled"`
+	SaveResponses bool   `json:"saveResponses"`
+	Schedule      struct {
+		Timezone string `json:"timezone"`
+		Hours    []int  `json:"hours"`
+		MDay     []int  `json:"mday"`
+		Minutes  []int  `json:"minutes"`
+		Months   []int  `json:"months"`
+		WDay     []int  `json:"wday"`
+	} `json:"schedule"`
+}
+
+// JobHistory represents job execution history.
+type JobHistory struct {
+	JobID      int    `json:"jobId"`
+	Date       string `json:"date"`
+	Status     string `json:"status"`
+	HttpStatus int    `json:"httpStatus"`
+	Duration   int    `json:"duration"`
+}
+
+// JobsResponse represents the API response for listing jobs.
+type JobsResponse struct {
+	Jobs []Job `json:"jobs"`
+}
+
+// JobHistoryResponse represents the API response for job history.
+type JobHistoryResponse struct {
+	History []JobHistory `json:"history"`
+}
+
+// doRequest performs an HTTP request to the cron-job.org API.
+func (c *Client) doRequest(method, path string, body interface{}) (*http.Response, error) {
 	var bodyReader *bytes.Reader
 	if body != nil {
 		j, err := json.Marshal(body)
@@ -93,4 +129,55 @@ func (c *Client) DoRequest(method, path string, body interface{}) (*http.Respons
 	}
 
 	return resp, nil
+}
+
+// GetJobs retrieves all jobs from the cron-job.org API.
+func (c *Client) GetJobs() ([]Job, error) {
+	resp, err := c.doRequest("GET", "/jobs", nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var jobsResp JobsResponse
+	if err := json.NewDecoder(resp.Body).Decode(&jobsResp); err != nil {
+		return nil, fmt.Errorf("failed to decode jobs response: %w", err)
+	}
+
+	return jobsResp.Jobs, nil
+}
+
+// GetJob retrieves a specific job by ID from the cron-job.org API.
+func (c *Client) GetJob(jobID string) (*Job, error) {
+	jobs, err := c.GetJobs()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, job := range jobs {
+		if fmt.Sprintf("%d", job.JobID) == jobID {
+			return &job, nil
+		}
+	}
+
+	return nil, &APIError{
+		StatusCode: 404,
+		Message:    "Job not found",
+	}
+}
+
+// GetJobHistory retrieves the execution history for a specific job.
+func (c *Client) GetJobHistory(jobID string) ([]JobHistory, error) {
+	resp, err := c.doRequest("GET", fmt.Sprintf("/jobs/%s/history", jobID), nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var historyResp JobHistoryResponse
+	if err := json.NewDecoder(resp.Body).Decode(&historyResp); err != nil {
+		return nil, fmt.Errorf("failed to decode job history response: %w", err)
+	}
+
+	return historyResp.History, nil
 }

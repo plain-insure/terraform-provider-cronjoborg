@@ -13,19 +13,16 @@ provider "cronjob" {
   # api_key = var.cron_job_api_key
 }
 
-# Create a folder to organize jobs
-resource "cronjob_folder" "monitoring" {
-  title = "Monitoring Jobs"
+# Get all jobs from your cron-job.org account
+data "cronjob_jobs" "all" {
 }
 
-# Create a simple cron job
-resource "cronjob_job" "health_check" {
-  title = "Health Check"
-  url   = "https://example.com/health"
-  # Add more configuration as needed
-}
+# Example: Get a specific job by ID (uncomment and set actual job ID)
+# data "cronjob_job" "example" {
+#   job_id = 123
+# }
 
-# Create a status page
-resource "cronjob_status_page" "example" {
-  title = "Example Status Page"
-}
+# Example: Get job history (uncomment and set actual job ID)
+# data "cronjob_job_history" "example_history" {
+#   job_id = 123
+# }

@@ -1,6 +1,10 @@
 # Basic Example
 
-This example demonstrates the basic usage of the cronjob provider.
+This example demonstrates the basic usage of the cronjob provider data sources.
+
+## Overview
+
+The cron-job.org API only supports read operations, so this provider offers data sources to retrieve job information rather than managing jobs directly.
 
 ## Usage
 
@@ -24,15 +28,12 @@ This example demonstrates the basic usage of the cronjob provider.
    terraform apply
    ```
 
-## What this creates
+## What this does
 
-- A folder named "Monitoring Jobs"
-- A cron job for health checking
-- A status page
+- Retrieves all jobs from your cron-job.org account
+- Shows individual job details if you have any jobs
+- Outputs job count and summary information
 
-## Cleanup
+## Note
 
-To destroy the created resources:
-```bash
-terraform destroy
-```
+This provider only provides data sources since the cron-job.org API only supports listing jobs and job history. It does not support creating, updating, or deleting jobs via the API.
