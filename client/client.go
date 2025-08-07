@@ -181,3 +181,72 @@ func (c *Client) GetJobHistory(jobID string) ([]JobHistory, error) {
 
 	return historyResp.History, nil
 }
+
+// CreateJob creates a new cron job.
+func (c *Client) CreateJob(job map[string]interface{}) (int, error) {
+	reqBody := map[string]interface{}{
+		"job": job,
+	}
+
+	resp, err := c.doRequest("PUT", "/jobs", reqBody)
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+
+	var result struct {
+		JobId int `json:"jobId"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return 0, fmt.Errorf("failed to decode create job response: %w", err)
+	}
+
+	return result.JobId, nil
+}
+
+// UpdateJob updates an existing cron job.
+func (c *Client) UpdateJob(jobID string, job map[string]interface{}) error {
+	reqBody := map[string]interface{}{
+		"jobId": jobID,
+		"job":   job,
+	}
+
+	_, err := c.doRequest("PATCH", fmt.Sprintf("/jobs/%s", jobID), reqBody)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// DeleteJob deletes a cron job.
+func (c *Client) DeleteJob(jobID string) error {
+	reqBody := map[string]interface{}{
+		"jobId": jobID,
+	}
+
+	_, err := c.doRequest("DELETE", fmt.Sprintf("/jobs/%s", jobID), reqBody)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// GetJobDetails retrieves detailed information for a specific job.
+func (c *Client) GetJobDetails(jobID string) (map[string]interface{}, error) {
+	resp, err := c.doRequest("GET", fmt.Sprintf("/jobs/%s", jobID), nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var result struct {
+		JobDetails map[string]interface{} `json:"jobDetails"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("failed to decode job details response: %w", err)
+	}
+
+	return result.JobDetails, nil
+}

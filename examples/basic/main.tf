@@ -13,16 +13,22 @@ provider "cronjob" {
   # api_key = var.cron_job_api_key
 }
 
+# Create a new cron job
+resource "cronjob_job" "example" {
+  title = "Example Terraform Job"
+  url   = "https://httpbin.org/post"
+}
+
 # Get all jobs from your cron-job.org account
 data "cronjob_jobs" "all" {
 }
 
-# Example: Get a specific job by ID (uncomment and set actual job ID)
-# data "cronjob_job" "example" {
-#   job_id = 123
-# }
+# Get details of the job we just created
+data "cronjob_job" "created_job" {
+  job_id = cronjob_job.example.id
+}
 
-# Example: Get job history (uncomment and set actual job ID)
-# data "cronjob_job_history" "example_history" {
-#   job_id = 123
-# }
+# Get job history for the created job
+data "cronjob_job_history" "example_history" {
+  job_id = cronjob_job.example.id
+}

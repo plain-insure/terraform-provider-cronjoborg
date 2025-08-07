@@ -11,11 +11,11 @@ import (
 
 func TestDataSourceJob_Schema(t *testing.T) {
 	ds := dataSourceJob()
-	
+
 	if ds == nil {
 		t.Fatal("dataSourceJob() returned nil")
 	}
-	
+
 	if ds.Schema == nil {
 		t.Fatal("Schema should not be nil")
 	}
@@ -47,11 +47,11 @@ func TestDataSourceJob_Schema(t *testing.T) {
 
 func TestDataSourceJobs_Schema(t *testing.T) {
 	ds := dataSourceJobs()
-	
+
 	if ds == nil {
 		t.Fatal("dataSourceJobs() returned nil")
 	}
-	
+
 	if ds.Schema == nil {
 		t.Fatal("Schema should not be nil")
 	}
@@ -71,11 +71,11 @@ func TestDataSourceJobs_Schema(t *testing.T) {
 
 func TestDataSourceJobHistory_Schema(t *testing.T) {
 	ds := dataSourceJobHistory()
-	
+
 	if ds == nil {
 		t.Fatal("dataSourceJobHistory() returned nil")
 	}
-	
+
 	if ds.Schema == nil {
 		t.Fatal("Schema should not be nil")
 	}

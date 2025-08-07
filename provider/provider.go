@@ -30,8 +30,7 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			// Note: The cron-job.org API only supports read operations for jobs.
-			// Create, update, and delete operations are not supported via the API.
+			"cronjob_job": resourceJob(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"cronjob_job":         dataSourceJob(),

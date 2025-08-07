@@ -1,3 +1,8 @@
+output "created_job_id" {
+  description = "ID of the created job"
+  value       = cronjob_job.example.id
+}
+
 output "all_jobs" {
   description = "List of all jobs"
   value       = data.cronjob_jobs.all.jobs
@@ -21,4 +26,14 @@ output "job_titles" {
   value = [
     for job in data.cronjob_jobs.all.jobs : job.title
   ]
+}
+
+output "created_job_details" {
+  description = "Details of the job we created"
+  value       = data.cronjob_job.created_job
+}
+
+output "created_job_history" {
+  description = "Execution history of the created job"
+  value       = data.cronjob_job_history.example_history.history
 }

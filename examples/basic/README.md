@@ -1,10 +1,14 @@
 # Basic Example
 
-This example demonstrates the basic usage of the cronjob provider data sources.
+This example demonstrates the basic usage of the cronjob provider, including both resource management and data sources.
 
 ## Overview
 
-The cron-job.org API only supports read operations, so this provider offers data sources to retrieve job information rather than managing jobs directly.
+The cronjob provider supports full CRUD operations for cron jobs, including:
+- Creating new jobs with `cronjob_job` resource
+- Reading job details with `cronjob_job` data source
+- Listing all jobs with `cronjob_jobs` data source
+- Viewing job execution history with `cronjob_job_history` data source
 
 ## Usage
 
@@ -30,10 +34,16 @@ The cron-job.org API only supports read operations, so this provider offers data
 
 ## What this does
 
+- Creates a new cron job with the title "Example Terraform Job"
 - Retrieves all jobs from your cron-job.org account
-- Shows individual job details if you have any jobs
+- Shows details of the job we just created
+- Retrieves execution history for the created job
 - Outputs job count and summary information
 
-## Note
+## Resources and Data Sources
 
-This provider only provides data sources since the cron-job.org API only supports listing jobs and job history. It does not support creating, updating, or deleting jobs via the API.
+This example uses:
+- `cronjob_job` resource: Creates and manages a cron job
+- `cronjob_jobs` data source: Lists all jobs in your account
+- `cronjob_job` data source: Gets details of a specific job
+- `cronjob_job_history` data source: Gets execution history for a job

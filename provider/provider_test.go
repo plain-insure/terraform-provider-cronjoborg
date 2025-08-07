@@ -47,12 +47,19 @@ func TestProvider(t *testing.T) {
 		t.Error("api_key should be sensitive")
 	}
 
-	// Test resources (should be empty as API only supports read operations)
+	// Test resources
 	if p.ResourcesMap == nil {
 		t.Fatal("ResourcesMap should not be nil")
 	}
-	if len(p.ResourcesMap) != 0 {
-		t.Errorf("Expected no resources in ResourcesMap (API only supports read operations), got %d", len(p.ResourcesMap))
+
+	expectedResources := []string{
+		"cronjob_job",
+	}
+
+	for _, resource := range expectedResources {
+		if _, ok := p.ResourcesMap[resource]; !ok {
+			t.Errorf("Resource %s should be in ResourcesMap", resource)
+		}
 	}
 
 	// Test datasources

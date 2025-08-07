@@ -4,6 +4,8 @@
 package client
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -317,5 +319,166 @@ func TestGetJobHistory(t *testing.T) {
 
 	if history[1].Status != "FAILED" {
 		t.Errorf("Expected second entry status to be 'FAILED', got '%s'", history[1].Status)
+	}
+}
+
+func TestClient_CreateJob(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "PUT" {
+			t.Errorf("Expected PUT request, got %s", r.Method)
+		}
+
+		if r.URL.Path != "/jobs" {
+			t.Errorf("Expected path '/jobs', got '%s'", r.URL.Path)
+		}
+
+		var requestBody map[string]interface{}
+		if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+			t.Errorf("Failed to decode request body: %v", err)
+		}
+
+		job, ok := requestBody["job"].(map[string]interface{})
+		if !ok {
+			t.Error("Expected 'job' field in request body")
+		}
+
+		if job["title"] != "Test Job" {
+			t.Errorf("Expected job title 'Test Job', got '%v'", job["title"])
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintln(w, `{"jobId": 123}`)
+	}))
+	defer server.Close()
+
+	client := NewClient(server.URL, "test-key")
+
+	job := map[string]interface{}{
+		"title": "Test Job",
+		"url":   "https://example.com",
+	}
+
+	jobID, err := client.CreateJob(job)
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	if jobID != 123 {
+		t.Errorf("Expected job ID 123, got %d", jobID)
+	}
+}
+
+func TestClient_UpdateJob(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "PATCH" {
+			t.Errorf("Expected PATCH request, got %s", r.Method)
+		}
+
+		if r.URL.Path != "/jobs/123" {
+			t.Errorf("Expected path '/jobs/123', got '%s'", r.URL.Path)
+		}
+
+		var requestBody map[string]interface{}
+		if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+			t.Errorf("Failed to decode request body: %v", err)
+		}
+
+		if requestBody["jobId"] != "123" {
+			t.Errorf("Expected jobId '123', got '%v'", requestBody["jobId"])
+		}
+
+		job, ok := requestBody["job"].(map[string]interface{})
+		if !ok {
+			t.Error("Expected 'job' field in request body")
+		}
+
+		if job["title"] != "Updated Job" {
+			t.Errorf("Expected job title 'Updated Job', got '%v'", job["title"])
+		}
+
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	client := NewClient(server.URL, "test-key")
+
+	job := map[string]interface{}{
+		"title": "Updated Job",
+		"url":   "https://example.com/updated",
+	}
+
+	err := client.UpdateJob("123", job)
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+}
+
+func TestClient_DeleteJob(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "DELETE" {
+			t.Errorf("Expected DELETE request, got %s", r.Method)
+		}
+
+		if r.URL.Path != "/jobs/123" {
+			t.Errorf("Expected path '/jobs/123', got '%s'", r.URL.Path)
+		}
+
+		var requestBody map[string]interface{}
+		if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+			t.Errorf("Failed to decode request body: %v", err)
+		}
+
+		if requestBody["jobId"] != "123" {
+			t.Errorf("Expected jobId '123', got '%v'", requestBody["jobId"])
+		}
+
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	client := NewClient(server.URL, "test-key")
+
+	err := client.DeleteJob("123")
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+}
+
+func TestClient_GetJobDetails(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			t.Errorf("Expected GET request, got %s", r.Method)
+		}
+
+		if r.URL.Path != "/jobs/123" {
+			t.Errorf("Expected path '/jobs/123', got '%s'", r.URL.Path)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintln(w, `{
+			"jobDetails": {
+				"title": "Test Job",
+				"url": "https://example.com",
+				"enabled": true
+			}
+		}`)
+	}))
+	defer server.Close()
+
+	client := NewClient(server.URL, "test-key")
+
+	details, err := client.GetJobDetails("123")
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	if details["title"] != "Test Job" {
+		t.Errorf("Expected title 'Test Job', got '%v'", details["title"])
+	}
+
+	if details["url"] != "https://example.com" {
+		t.Errorf("Expected url 'https://example.com', got '%v'", details["url"])
 	}
 }
