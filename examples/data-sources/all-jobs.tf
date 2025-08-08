@@ -1,33 +1,33 @@
 terraform {
   required_providers {
-    cronjob = {
-      source = "registry.terraform.io/plain-insure/cronjob"
+    cronjoborg = {
+      source = "registry.terraform.io/plain-insure/cronjoborg"
     }
   }
 }
 
-provider "cronjob" {
+provider "cronjoborg" {
   # API key can be set via CRON_JOB_API_KEY environment variable
   # or specified here (not recommended for production)
   # api_key = "your-api-key-here"
 }
 
 # Read all jobs
-data "cronjob_jobs" "all" {
+data "cronjoborg_jobs" "all" {
 }
 
 output "all_jobs" {
-  value = data.cronjob_jobs.all.jobs
+  value = data.cronjoborg_jobs.all.jobs
 }
 
 output "job_count" {
-  value = length(data.cronjob_jobs.all.jobs)
+  value = length(data.cronjoborg_jobs.all.jobs)
 }
 
 # Example of filtering enabled jobs
 locals {
   enabled_jobs = [
-    for job in data.cronjob_jobs.all.jobs : job
+    for job in data.cronjoborg_jobs.all.jobs : job
     if job.enabled
   ]
 }

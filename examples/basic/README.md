@@ -1,14 +1,14 @@
 # Basic Example
 
-This example demonstrates the basic usage of the cronjob provider, including both resource management and data sources.
+This example demonstrates the basic usage of the cronjoborg provider, including both resource management and data sources.
 
 ## Overview
 
-The cronjob provider supports full CRUD operations for cron jobs, including:
-- Creating new jobs with `cronjob_job` resource
-- Reading job details with `cronjob_job` data source
-- Listing all jobs with `cronjob_jobs` data source
-- Viewing job execution history with `cronjob_job_history` data source
+The cronjoborg provider supports full CRUD operations for cron jobs, including:
+- Creating new jobs with `cronjoborg_job` resource
+- Reading job details with `cronjoborg_job` data source
+- Listing all jobs with `cronjoborg_jobs` data source
+- Viewing job execution history with `cronjoborg_job_history` data source
 
 ## Usage
 
@@ -43,7 +43,7 @@ The cronjob provider supports full CRUD operations for cron jobs, including:
 ## Resources and Data Sources
 
 This example uses:
-- `cronjob_job` resource: Creates and manages a cron job
-- `cronjob_jobs` data source: Lists all jobs in your account
-- `cronjob_job` data source: Gets details of a specific job
-- `cronjob_job_history` data source: Gets execution history for a job
+- `cronjoborg_job` resource: Creates and manages a cron job
+- `cronjoborg_jobs` data source: Lists all jobs in your account
+- `cronjoborg_job` data source: Gets details of a specific job
+- `cronjoborg_job_history` data source: Gets execution history for a job

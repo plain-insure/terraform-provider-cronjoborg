@@ -1,4 +1,4 @@
-module github.com/plain-insure/terraform-provider-cron-job.org
+module github.com/plain-insure/terraform-provider-cronjoborg
 
 go 1.23.0
 

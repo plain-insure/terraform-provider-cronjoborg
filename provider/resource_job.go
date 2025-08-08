@@ -9,7 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/plain-insure/terraform-provider-cron-job.org/client"
+	"github.com/plain-insure/terraform-provider-cronjoborg/client"
 )
 
 func resourceJob() *schema.Resource {

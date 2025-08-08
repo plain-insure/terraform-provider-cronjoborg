@@ -18,10 +18,10 @@ func TestAccJobDataSource(t *testing.T) {
 			{
 				Config: testAccJobDataSourceConfig(1), // Assuming job ID 1 exists
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.cronjob_job.test", "title"),
-					resource.TestCheckResourceAttrSet("data.cronjob_job.test", "url"),
-					resource.TestCheckResourceAttrSet("data.cronjob_job.test", "enabled"),
-					resource.TestCheckResourceAttrSet("data.cronjob_job.test", "save_responses"),
+					resource.TestCheckResourceAttrSet("data.cronjoborg_job.test", "title"),
+					resource.TestCheckResourceAttrSet("data.cronjoborg_job.test", "url"),
+					resource.TestCheckResourceAttrSet("data.cronjoborg_job.test", "enabled"),
+					resource.TestCheckResourceAttrSet("data.cronjoborg_job.test", "save_responses"),
 				),
 			},
 		},
@@ -36,7 +36,7 @@ func TestAccJobsDataSource(t *testing.T) {
 			{
 				Config: testAccJobsDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.cronjob_jobs.test", "jobs.#"),
+					resource.TestCheckResourceAttrSet("data.cronjoborg_jobs.test", "jobs.#"),
 				),
 			},
 		},
@@ -51,7 +51,7 @@ func TestAccJobHistoryDataSource(t *testing.T) {
 			{
 				Config: testAccJobHistoryDataSourceConfig(1), // Assuming job ID 1 exists
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.cronjob_job_history.test", "history.#"),
+					resource.TestCheckResourceAttrSet("data.cronjoborg_job_history.test", "history.#"),
 				),
 			},
 		},
@@ -60,7 +60,7 @@ func TestAccJobHistoryDataSource(t *testing.T) {
 
 func testAccJobDataSourceConfig(jobID int) string {
 	return fmt.Sprintf(`
-data "cronjob_job" "test" {
+data "cronjoborg_job" "test" {
   job_id = %d
 }
 `, jobID)
@@ -68,14 +68,14 @@ data "cronjob_job" "test" {
 
 func testAccJobsDataSourceConfig() string {
 	return `
-data "cronjob_jobs" "test" {
+data "cronjoborg_jobs" "test" {
 }
 `
 }
 
 func testAccJobHistoryDataSourceConfig(jobID int) string {
 	return fmt.Sprintf(`
-data "cronjob_job_history" "test" {
+data "cronjoborg_job_history" "test" {
   job_id = %d
 }
 `, jobID)

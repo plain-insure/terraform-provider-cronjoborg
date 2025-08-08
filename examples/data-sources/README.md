@@ -8,9 +8,9 @@ The cron-job.org API only supports read operations for jobs, so this provider pr
 
 ## Available Data Sources
 
-- `cronjob_job` - Read a single job by ID
-- `cronjob_jobs` - Read all jobs
-- `cronjob_job_history` - Read execution history for a job
+- `cronjoborg_job` - Read a single job by ID
+- `cronjoborg_jobs` - Read all jobs
+- `cronjoborg_job_history` - Read execution history for a job
 
 ## Usage
 

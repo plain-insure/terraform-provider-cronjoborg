@@ -1,7 +1,7 @@
 # Terraform Provider for cron-job.org
 
-[![Tests](https://github.com/plain-insure/terraform-provider-cron-job.org/workflows/Tests/badge.svg)](https://github.com/plain-insure/terraform-provider-cron-job.org/actions?query=workflow%3ATests)
-[![Release](https://github.com/plain-insure/terraform-provider-cron-job.org/workflows/Release/badge.svg)](https://github.com/plain-insure/terraform-provider-cron-job.org/actions?query=workflow%3ARelease)
+[![Tests](https://github.com/plain-insure/terraform-provider-cronjoborg/workflows/Tests/badge.svg)](https://github.com/plain-insure/terraform-provider-cronjoborg/actions?query=workflow%3ATests)
+[![Release](https://github.com/plain-insure/terraform-provider-cronjoborg/workflows/Release/badge.svg)](https://github.com/plain-insure/terraform-provider-cronjoborg/actions?query=workflow%3ARelease)
 
 This provider allows you to manage jobs, folders, and status pages using the [cron-job.org](https://www.cron-job.org/) API or a compatible self-hosted service.
 
@@ -17,8 +17,8 @@ This provider allows you to manage jobs, folders, and status pages using the [cr
 ```hcl
 terraform {
   required_providers {
-    cronjob = {
-      source  = "plain-insure/cronjob"
+    cronjoborg = {
+      source  = "plain-insure/cronjoborg"
       version = "~> 1.0"
     }
   }
@@ -28,8 +28,8 @@ terraform {
 ### From Source
 
 ```bash
-git clone https://github.com/plain-insure/terraform-provider-cron-job.org.git
-cd terraform-provider-cron-job.org
+git clone https://github.com/plain-insure/terraform-provider-cronjoborg.git
+cd terraform-provider-cronjoborg
 make build
 make install
 ```
@@ -39,7 +39,7 @@ make install
 ### Provider Configuration
 
 ```hcl
-provider "cronjob" {
+provider "cronjoborg" {
   api_url = "https://api.cron-job.org/"  # Optional, defaults to cron-job.org API
   api_key = var.cron_job_api_key         # Required, or set CRON_JOB_API_KEY env var
 }
@@ -49,18 +49,18 @@ provider "cronjob" {
 
 ```hcl
 # Create a folder
-resource "cronjob_folder" "monitoring" {
+resource "cronjoborg_folder" "monitoring" {
   title = "Monitoring Jobs"
 }
 
 # Create a cron job
-resource "cronjob_job" "health_check" {
+resource "cronjoborg_job" "health_check" {
   title = "Health Check"
   url   = "https://example.com/health"
 }
 
 # Create a status page
-resource "cronjob_status_page" "uptime" {
+resource "cronjoborg_status_page" "uptime" {
   title = "Service Uptime"
 }
 ```
@@ -83,7 +83,7 @@ export CRON_JOB_API_KEY="your-api-key-here"
 
 ### Provider Configuration
 ```hcl
-provider "cronjob" {
+provider "cronjoborg" {
   api_key = "your-api-key-here"
 }
 ```
@@ -96,16 +96,16 @@ variable "cron_job_api_key" {
   sensitive   = true
 }
 
-provider "cronjob" {
+provider "cronjoborg" {
   api_key = var.cron_job_api_key
 }
 ```
 
 ## Resources
 
-- `cronjob_job` - Manages cron jobs
-- `cronjob_folder` - Manages folders for organizing jobs
-- `cronjob_status_page` - Manages status pages
+- `cronjoborg_job` - Manages cron jobs
+- `cronjoborg_folder` - Manages folders for organizing jobs
+- `cronjoborg_status_page` - Manages status pages
 
 ## Documentation
 
@@ -119,8 +119,8 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for development setup and contribution 
 
 ```bash
 # Clone the repository
-git clone https://github.com/plain-insure/terraform-provider-cron-job.org.git
-cd terraform-provider-cron-job.org
+git clone https://github.com/plain-insure/terraform-provider-cronjoborg.git
+cd terraform-provider-cronjoborg
 
 # Install development tools
 make dev-setup
@@ -149,6 +149,6 @@ This project is licensed under the GNU General Public License v3.0 - see the [LI
 
 ## Support
 
-- 🐛 For bug reports and feature requests, please use [GitHub Issues](https://github.com/plain-insure/terraform-provider-cron-job.org/issues)
-- 💬 For questions and discussions, please use [GitHub Discussions](https://github.com/plain-insure/terraform-provider-cron-job.org/discussions)
+- 🐛 For bug reports and feature requests, please use [GitHub Issues](https://github.com/plain-insure/terraform-provider-cronjoborg/issues)
+- 💬 For questions and discussions, please use [GitHub Discussions](https://github.com/plain-insure/terraform-provider-cronjoborg/discussions)
 - 📖 Check out the [examples](./examples/) for common use cases

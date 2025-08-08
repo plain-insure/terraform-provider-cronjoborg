@@ -1,4 +1,4 @@
-# Contributing to terraform-provider-cron-job.org
+# Contributing to terraform-provider-cronjoborg
 
 Thank you for your interest in contributing to the Terraform Provider for cron-job.org!
 
@@ -14,8 +14,8 @@ Thank you for your interest in contributing to the Terraform Provider for cron-j
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/plain-insure/terraform-provider-cron-job.org.git
-   cd terraform-provider-cron-job.org
+   git clone https://github.com/plain-insure/terraform-provider-cronjoborg.git
+   cd terraform-provider-cronjoborg
    ```
 
 2. Install development tools:
@@ -92,8 +92,8 @@ This will install the provider to your local Terraform plugins directory.
    ```hcl
    terraform {
      required_providers {
-       cronjob = {
-         source  = "registry.terraform.io/plain-insure/cronjob"
+       cronjoborg = {
+         source  = "registry.terraform.io/plain-insure/cronjoborg"
          version = "dev"
        }
      }

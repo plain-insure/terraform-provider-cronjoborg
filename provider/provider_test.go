@@ -53,7 +53,7 @@ func TestProvider(t *testing.T) {
 	}
 
 	expectedResources := []string{
-		"cronjob_job",
+		"cronjoborg_job",
 	}
 
 	for _, resource := range expectedResources {
@@ -68,9 +68,9 @@ func TestProvider(t *testing.T) {
 	}
 
 	expectedDataSources := []string{
-		"cronjob_job",
-		"cronjob_jobs",
-		"cronjob_job_history",
+		"cronjoborg_job",
+		"cronjoborg_jobs",
+		"cronjoborg_job_history",
 	}
 
 	for _, dataSource := range expectedDataSources {
