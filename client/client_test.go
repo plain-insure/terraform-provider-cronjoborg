@@ -384,10 +384,6 @@ func TestClient_UpdateJob(t *testing.T) {
 			t.Errorf("Failed to decode request body: %v", err)
 		}
 
-		if requestBody["jobId"] != "123" {
-			t.Errorf("Expected jobId '123', got '%v'", requestBody["jobId"])
-		}
-
 		job, ok := requestBody["job"].(map[string]interface{})
 		if !ok {
 			t.Error("Expected 'job' field in request body")
@@ -395,6 +391,11 @@ func TestClient_UpdateJob(t *testing.T) {
 
 		if job["title"] != "Updated Job" {
 			t.Errorf("Expected job title 'Updated Job', got '%v'", job["title"])
+		}
+
+		// Ensure jobId is NOT included in the request body
+		if _, exists := requestBody["jobId"]; exists {
+			t.Error("jobId should not be included in PATCH request body")
 		}
 
 		w.WriteHeader(http.StatusOK)

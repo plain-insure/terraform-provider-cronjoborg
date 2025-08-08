@@ -207,8 +207,7 @@ func (c *Client) CreateJob(job map[string]interface{}) (int, error) {
 // UpdateJob updates an existing cron job.
 func (c *Client) UpdateJob(jobID string, job map[string]interface{}) error {
 	reqBody := map[string]interface{}{
-		"jobId": jobID,
-		"job":   job,
+		"job": job,
 	}
 
 	_, err := c.doRequest("PATCH", fmt.Sprintf("/jobs/%s", jobID), reqBody)
