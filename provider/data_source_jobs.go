@@ -14,6 +14,7 @@ import (
 
 func dataSourceJobs() *schema.Resource {
 	return &schema.Resource{
+		Description: "Fetch information about all cron jobs in your account.",
 		ReadContext: dataSourceJobsRead,
 		Schema: map[string]*schema.Schema{
 			"some_failed": {

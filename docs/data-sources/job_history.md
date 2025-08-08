@@ -3,12 +3,12 @@
 page_title: "cronjoborg_job_history Data Source - cronjoborg"
 subcategory: ""
 description: |-
-  
+  Fetch execution history and predictions for a specific cron job.
 ---
 
 # cronjoborg_job_history (Data Source)
 
-
+Fetch execution history and predictions for a specific cron job.
 
 
 
@@ -23,14 +23,36 @@ description: |-
 
 - `history` (List of Object) List of job execution history entries (see [below for nested schema](#nestedatt--history))
 - `id` (String) The ID of this resource.
+- `predictions` (List of Number) Unix timestamps of predicted next executions (up to 3)
 
 <a id="nestedatt--history"></a>
 ### Nested Schema for `history`
 
 Read-Only:
 
-- `date` (String)
+- `body` (String)
+- `date` (Number)
+- `date_planned` (Number)
 - `duration` (Number)
+- `headers` (String)
 - `http_status` (Number)
+- `identifier` (String)
+- `jitter` (Number)
 - `job_id` (Number)
-- `status` (String)
+- `job_log_id` (Number)
+- `stats` (List of Object) (see [below for nested schema](#nestedobjatt--history--stats))
+- `status` (Number)
+- `status_text` (String)
+- `url` (String)
+
+<a id="nestedobjatt--history--stats"></a>
+### Nested Schema for `history.stats`
+
+Read-Only:
+
+- `app_connect` (Number)
+- `connect` (Number)
+- `name_lookup` (Number)
+- `pre_transfer` (Number)
+- `start_transfer` (Number)
+- `total` (Number)

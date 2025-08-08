@@ -3,12 +3,12 @@
 page_title: "cronjoborg_job Data Source - cronjoborg"
 subcategory: ""
 description: |-
-  
+  Fetch information about a specific cron job.
 ---
 
 # cronjoborg_job (Data Source)
 
-
+Fetch information about a specific cron job.
 
 
 
@@ -21,21 +21,63 @@ description: |-
 
 ### Read-Only
 
+- `auth` (List of Object) HTTP authentication settings (see [below for nested schema](#nestedatt--auth))
 - `enabled` (Boolean) Whether the job is enabled
+- `extended_data` (List of Object) Extended request data (see [below for nested schema](#nestedatt--extended_data))
+- `folder_id` (Number) The identifier of the folder this job resides in
 - `id` (String) The ID of this resource.
+- `last_duration` (Number) Last execution duration in milliseconds
+- `last_execution` (Number) Unix timestamp of last execution (in seconds)
+- `last_status` (Number) Last execution status
+- `next_execution` (Number) Unix timestamp of predicted next execution (in seconds)
+- `notification` (List of Object) Notification settings (see [below for nested schema](#nestedatt--notification))
+- `redirect_success` (Boolean) Whether to treat 3xx HTTP redirect status codes as success
+- `request_method` (Number) HTTP request method
+- `request_timeout` (Number) Job timeout in seconds
 - `save_responses` (Boolean) Whether to save HTTP responses
 - `schedule` (List of Object) The schedule configuration for the job (see [below for nested schema](#nestedatt--schedule))
 - `title` (String) The title of the job
+- `type` (Number) Job type (0=Default job, 1=Monitoring job)
 - `url` (String) The URL to be called by the job
+
+<a id="nestedatt--auth"></a>
+### Nested Schema for `auth`
+
+Read-Only:
+
+- `enable` (Boolean)
+- `password` (String)
+- `user` (String)
+
+
+<a id="nestedatt--extended_data"></a>
+### Nested Schema for `extended_data`
+
+Read-Only:
+
+- `body` (String)
+- `headers` (Map of String)
+
+
+<a id="nestedatt--notification"></a>
+### Nested Schema for `notification`
+
+Read-Only:
+
+- `on_disable` (Boolean)
+- `on_failure` (Boolean)
+- `on_success` (Boolean)
+
 
 <a id="nestedatt--schedule"></a>
 ### Nested Schema for `schedule`
 
 Read-Only:
 
+- `expires_at` (Number)
 - `hours` (List of Number)
-- `mday` (List of Number)
+- `mdays` (List of Number)
 - `minutes` (List of Number)
 - `months` (List of Number)
 - `timezone` (String)
-- `wday` (List of Number)
+- `wdays` (List of Number)

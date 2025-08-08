@@ -3,12 +3,12 @@
 page_title: "cronjoborg_jobs Data Source - cronjoborg"
 subcategory: ""
 description: |-
-  
+  Fetch information about all cron jobs in your account.
 ---
 
 # cronjoborg_jobs (Data Source)
 
-
+Fetch information about all cron jobs in your account.
 
 
 
@@ -19,6 +19,7 @@ description: |-
 
 - `id` (String) The ID of this resource.
 - `jobs` (List of Object) List of all cron jobs (see [below for nested schema](#nestedatt--jobs))
+- `some_failed` (Boolean) True if some jobs could not be retrieved due to internal errors
 
 <a id="nestedatt--jobs"></a>
 ### Nested Schema for `jobs`
@@ -26,10 +27,19 @@ description: |-
 Read-Only:
 
 - `enabled` (Boolean)
+- `folder_id` (Number)
 - `job_id` (Number)
+- `last_duration` (Number)
+- `last_execution` (Number)
+- `last_status` (Number)
+- `next_execution` (Number)
+- `redirect_success` (Boolean)
+- `request_method` (Number)
+- `request_timeout` (Number)
 - `save_responses` (Boolean)
 - `schedule` (List of Object) (see [below for nested schema](#nestedobjatt--jobs--schedule))
 - `title` (String)
+- `type` (Number)
 - `url` (String)
 
 <a id="nestedobjatt--jobs--schedule"></a>
@@ -37,9 +47,10 @@ Read-Only:
 
 Read-Only:
 
+- `expires_at` (Number)
 - `hours` (List of Number)
-- `mday` (List of Number)
+- `mdays` (List of Number)
 - `minutes` (List of Number)
 - `months` (List of Number)
 - `timezone` (String)
-- `wday` (List of Number)
+- `wdays` (List of Number)

@@ -56,7 +56,68 @@ data "cronjoborg_job_history" "example_history" {
 - `title` (String) The title of the cron job
 - `url` (String) The URL to be called by the cron job
 
+### Optional
+
+- `auth` (Block List, Max: 1) HTTP authentication settings (see [below for nested schema](#nestedblock--auth))
+- `enabled` (Boolean) Whether the job is enabled (i.e. being executed) or not
+- `extended_data` (Block List, Max: 1) Extended request data (see [below for nested schema](#nestedblock--extended_data))
+- `folder_id` (Number) The identifier of the folder this job resides in (0 = root folder)
+- `notification` (Block List, Max: 1) Notification settings (see [below for nested schema](#nestedblock--notification))
+- `redirect_success` (Boolean) Whether to treat 3xx HTTP redirect status codes as success or not
+- `request_method` (Number) HTTP request method (0=GET, 1=POST, 2=OPTIONS, 3=HEAD, 4=PUT, 5=DELETE, 6=TRACE, 7=CONNECT, 8=PATCH)
+- `request_timeout` (Number) Job timeout in seconds (-1 = use default timeout)
+- `save_responses` (Boolean) Whether to save job response header/body or not
+- `schedule` (Block List, Max: 1) Job schedule configuration (see [below for nested schema](#nestedblock--schedule))
+
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `job_id` (Number) The unique identifier of the job
+- `last_duration` (Number) Last execution duration in milliseconds
+- `last_execution` (Number) Unix timestamp of last execution (in seconds)
+- `last_status` (Number) Last execution status
+- `next_execution` (Number) Unix timestamp of predicted next execution (in seconds)
+- `type` (Number) Job type (0=Default job, 1=Monitoring job)
+
+<a id="nestedblock--auth"></a>
+### Nested Schema for `auth`
+
+Optional:
+
+- `enable` (Boolean) Whether to enable HTTP basic authentication or not
+- `password` (String, Sensitive) HTTP basic auth password
+- `user` (String) HTTP basic auth username
+
+
+<a id="nestedblock--extended_data"></a>
+### Nested Schema for `extended_data`
+
+Optional:
+
+- `body` (String) Request body data
+- `headers` (Map of String) Request headers (key-value dictionary)
+
+
+<a id="nestedblock--notification"></a>
+### Nested Schema for `notification`
+
+Optional:
+
+- `on_disable` (Boolean) Whether to send a notification when the job has been disabled automatically or not
+- `on_failure` (Boolean) Whether to send a notification on job failure or not
+- `on_success` (Boolean) Whether to send a notification when the job succeeds after a prior failure or not
+
+
+<a id="nestedblock--schedule"></a>
+### Nested Schema for `schedule`
+
+Optional:
+
+- `expires_at` (Number) Date/time after which the job expires (format: YYYYMMDDhhmmss, 0 = does not expire)
+- `hours` (List of Number) Hours in which to execute the job (0-23; [-1] = every hour)
+- `mdays` (List of Number) Days of month in which to execute the job (1-31; [-1] = every day of month)
+- `minutes` (List of Number) Minutes in which to execute the job (0-59; [-1] = every minute)
+- `months` (List of Number) Months in which to execute the job (1-12; [-1] = every month)
+- `timezone` (String) Schedule time zone
+- `wdays` (List of Number) Days of week in which to execute the job (0=Sunday-6=Saturday; [-1] = every day of week)
 
