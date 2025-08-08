@@ -19,10 +19,10 @@ data "cronjob_job" "example" {
 
 output "job_details" {
   value = {
-    title         = data.cronjob_job.example.title
-    url           = data.cronjob_job.example.url
-    enabled       = data.cronjob_job.example.enabled
+    title          = data.cronjob_job.example.title
+    url            = data.cronjob_job.example.url
+    enabled        = data.cronjob_job.example.enabled
     save_responses = data.cronjob_job.example.save_responses
-    schedule      = data.cronjob_job.example.schedule
+    schedule       = data.cronjob_job.example.schedule
   }
 }

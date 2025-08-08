@@ -38,6 +38,5 @@ output "successful_executions" {
 }
 
 output "success_rate" {
-  value = length(data.cronjob_job_history.example.history) > 0 ? 
-    length(local.successful_executions) / length(data.cronjob_job_history.example.history) * 100 : 0
+  value = length(data.cronjob_job_history.example.history) > 0 ? length(local.successful_executions) / length(data.cronjob_job_history.example.history) * 100 : 0
 }

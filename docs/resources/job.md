@@ -27,21 +27,24 @@ provider "cronjob" {
   # api_key = var.cron_job_api_key
 }
 
-# Create a folder to organize jobs
-resource "cronjob_folder" "monitoring" {
-  title = "Monitoring Jobs"
+# Create a new cron job
+resource "cronjob_job" "example" {
+  title = "Example Terraform Job"
+  url   = "https://httpbin.org/post"
 }
 
-# Create a simple cron job
-resource "cronjob_job" "health_check" {
-  title = "Health Check"
-  url   = "https://example.com/health"
-  # Add more configuration as needed
+# Get all jobs from your cron-job.org account
+data "cronjob_jobs" "all" {
 }
 
-# Create a status page
-resource "cronjob_status_page" "example" {
-  title = "Example Status Page"
+# Get details of the job we just created
+data "cronjob_job" "created_job" {
+  job_id = cronjob_job.example.id
+}
+
+# Get job history for the created job
+data "cronjob_job_history" "example_history" {
+  job_id = cronjob_job.example.id
 }
 ```
 

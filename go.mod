@@ -2,6 +2,8 @@ module github.com/plain-insure/terraform-provider-cron-job.org
 
 go 1.23.0
 
+toolchain go1.24.5
+
 require github.com/hashicorp/terraform-plugin-sdk/v2 v2.37.0
 
 require (
