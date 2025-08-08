@@ -15,6 +15,7 @@ import (
 
 func dataSourceJobHistory() *schema.Resource {
 	return &schema.Resource{
+		Description: "Fetch execution history and predictions for a specific cron job.",
 		ReadContext: dataSourceJobHistoryRead,
 		Schema: map[string]*schema.Schema{
 			"job_id": {
