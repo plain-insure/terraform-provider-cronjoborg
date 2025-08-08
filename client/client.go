@@ -84,6 +84,47 @@ type JobExtendedData struct {
 	Body    string            `json:"body"`
 }
 
+// UnmarshalJSON implements custom JSON unmarshaling for JobExtendedData
+// to handle cases where the API returns an empty array instead of an empty object for headers.
+func (j *JobExtendedData) UnmarshalJSON(data []byte) error {
+	// Create a temporary struct with json.RawMessage for headers
+	var temp struct {
+		Headers json.RawMessage `json:"headers"`
+		Body    string          `json:"body"`
+	}
+
+	if err := json.Unmarshal(data, &temp); err != nil {
+		return err
+	}
+
+	// Set the body
+	j.Body = temp.Body
+
+	// Handle headers field - it could be an array [] or an object {}
+	if len(temp.Headers) == 0 {
+		j.Headers = make(map[string]string)
+		return nil
+	}
+
+	// Try to unmarshal as object first
+	var headersMap map[string]string
+	if err := json.Unmarshal(temp.Headers, &headersMap); err == nil {
+		j.Headers = headersMap
+		return nil
+	}
+
+	// If that fails, try to unmarshal as array (which we'll treat as empty map)
+	var headersArray []interface{}
+	if err := json.Unmarshal(temp.Headers, &headersArray); err == nil {
+		// If it's an array (likely empty), treat as empty map
+		j.Headers = make(map[string]string)
+		return nil
+	}
+
+	// If both fail, return error
+	return fmt.Errorf("headers field must be either an object or an array")
+}
+
 // JobSchedule represents the execution schedule of a job.
 type JobSchedule struct {
 	Timezone  string `json:"timezone"`

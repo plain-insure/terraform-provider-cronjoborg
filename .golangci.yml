@@ -15,7 +15,6 @@ linters:
     - unconvert
     - unparam
     - unused
-    - usetesting
 
 issues:
   max-issues-per-linter: 0

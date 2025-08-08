@@ -555,7 +555,7 @@ func TestClient_GetJobDetails(t *testing.T) {
 					"onDisable": false
 				},
 				"extendedData": {
-					"headers": {},
+					"headers": [],
 					"body": ""
 				}
 			}
@@ -576,5 +576,83 @@ func TestClient_GetJobDetails(t *testing.T) {
 
 	if details.URL != "https://example.com" {
 		t.Errorf("Expected url 'https://example.com', got '%s'", details.URL)
+	}
+
+	// Verify that headers array is properly handled as empty map
+	if len(details.ExtendedData.Headers) != 0 {
+		t.Errorf("Expected empty headers map, got %d headers", len(details.ExtendedData.Headers))
+	}
+}
+
+func TestJobExtendedData_UnmarshalJSON_ObjectHeaders(t *testing.T) {
+	// Test normal object headers
+	jsonData := `{
+		"headers": {
+			"X-Foo": "Bar",
+			"Content-Type": "application/json"
+		},
+		"body": "test body"
+	}`
+
+	var extData JobExtendedData
+	err := json.Unmarshal([]byte(jsonData), &extData)
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	if len(extData.Headers) != 2 {
+		t.Errorf("Expected 2 headers, got %d", len(extData.Headers))
+	}
+
+	if extData.Headers["X-Foo"] != "Bar" {
+		t.Errorf("Expected X-Foo header to be 'Bar', got '%s'", extData.Headers["X-Foo"])
+	}
+
+	if extData.Body != "test body" {
+		t.Errorf("Expected body to be 'test body', got '%s'", extData.Body)
+	}
+}
+
+func TestJobExtendedData_UnmarshalJSON_ArrayHeaders(t *testing.T) {
+	// Test when API returns an array instead of object (should be treated as empty map)
+	jsonData := `{
+		"headers": [],
+		"body": "test body"
+	}`
+
+	var extData JobExtendedData
+	err := json.Unmarshal([]byte(jsonData), &extData)
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	if len(extData.Headers) != 0 {
+		t.Errorf("Expected 0 headers, got %d", len(extData.Headers))
+	}
+
+	if extData.Body != "test body" {
+		t.Errorf("Expected body to be 'test body', got '%s'", extData.Body)
+	}
+}
+
+func TestJobExtendedData_UnmarshalJSON_EmptyHeaders(t *testing.T) {
+	// Test empty object headers
+	jsonData := `{
+		"headers": {},
+		"body": "test body"
+	}`
+
+	var extData JobExtendedData
+	err := json.Unmarshal([]byte(jsonData), &extData)
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	if len(extData.Headers) != 0 {
+		t.Errorf("Expected 0 headers, got %d", len(extData.Headers))
+	}
+
+	if extData.Body != "test body" {
+		t.Errorf("Expected body to be 'test body', got '%s'", extData.Body)
 	}
 }
