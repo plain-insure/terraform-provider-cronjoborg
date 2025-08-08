@@ -285,66 +285,9 @@ func resourceJobCreate(d *schema.ResourceData, m interface{}) error {
 	job["folderId"] = d.Get("folder_id").(int)
 	job["requestMethod"] = d.Get("request_method").(int)
 
-	// Schedule
-	if scheduleList := d.Get("schedule").([]interface{}); len(scheduleList) > 0 {
-		scheduleMap := scheduleList[0].(map[string]interface{})
-		schedule := make(map[string]interface{})
-
-		schedule["timezone"] = scheduleMap["timezone"].(string)
-		schedule["expiresAt"] = scheduleMap["expires_at"].(int)
-
-		if hours := scheduleMap["hours"].([]interface{}); len(hours) > 0 {
-			hoursInt := make([]int, len(hours))
-			for i, v := range hours {
-				hoursInt[i] = v.(int)
-			}
-			schedule["hours"] = hoursInt
-		} else {
-			schedule["hours"] = []int{}
-		}
-
-		if mdays := scheduleMap["mdays"].([]interface{}); len(mdays) > 0 {
-			mdaysInt := make([]int, len(mdays))
-			for i, v := range mdays {
-				mdaysInt[i] = v.(int)
-			}
-			schedule["mdays"] = mdaysInt
-		} else {
-			schedule["mdays"] = []int{}
-		}
-
-		if minutes := scheduleMap["minutes"].([]interface{}); len(minutes) > 0 {
-			minutesInt := make([]int, len(minutes))
-			for i, v := range minutes {
-				minutesInt[i] = v.(int)
-			}
-			schedule["minutes"] = minutesInt
-		} else {
-			schedule["minutes"] = []int{}
-		}
-
-		if months := scheduleMap["months"].([]interface{}); len(months) > 0 {
-			monthsInt := make([]int, len(months))
-			for i, v := range months {
-				monthsInt[i] = v.(int)
-			}
-			schedule["months"] = monthsInt
-		} else {
-			schedule["months"] = []int{}
-		}
-
-		if wdays := scheduleMap["wdays"].([]interface{}); len(wdays) > 0 {
-			wdaysInt := make([]int, len(wdays))
-			for i, v := range wdays {
-				wdaysInt[i] = v.(int)
-			}
-			schedule["wdays"] = wdaysInt
-		} else {
-			schedule["wdays"] = []int{}
-		}
-
-		job["schedule"] = schedule
-	}
+	// Schedule - always include schedule with default values
+	schedule := buildScheduleFromResourceData(d)
+	job["schedule"] = schedule
 
 	// Auth
 	if authList := d.Get("auth").([]interface{}); len(authList) > 0 {
@@ -548,65 +491,8 @@ func resourceJobUpdate(d *schema.ResourceData, m interface{}) error {
 
 	// Schedule
 	if d.HasChange("schedule") {
-		if scheduleList := d.Get("schedule").([]interface{}); len(scheduleList) > 0 {
-			scheduleMap := scheduleList[0].(map[string]interface{})
-			schedule := make(map[string]interface{})
-
-			schedule["timezone"] = scheduleMap["timezone"].(string)
-			schedule["expiresAt"] = scheduleMap["expires_at"].(int)
-
-			if hours := scheduleMap["hours"].([]interface{}); len(hours) > 0 {
-				hoursInt := make([]int, len(hours))
-				for i, v := range hours {
-					hoursInt[i] = v.(int)
-				}
-				schedule["hours"] = hoursInt
-			} else {
-				schedule["hours"] = []int{}
-			}
-
-			if mdays := scheduleMap["mdays"].([]interface{}); len(mdays) > 0 {
-				mdaysInt := make([]int, len(mdays))
-				for i, v := range mdays {
-					mdaysInt[i] = v.(int)
-				}
-				schedule["mdays"] = mdaysInt
-			} else {
-				schedule["mdays"] = []int{}
-			}
-
-			if minutes := scheduleMap["minutes"].([]interface{}); len(minutes) > 0 {
-				minutesInt := make([]int, len(minutes))
-				for i, v := range minutes {
-					minutesInt[i] = v.(int)
-				}
-				schedule["minutes"] = minutesInt
-			} else {
-				schedule["minutes"] = []int{}
-			}
-
-			if months := scheduleMap["months"].([]interface{}); len(months) > 0 {
-				monthsInt := make([]int, len(months))
-				for i, v := range months {
-					monthsInt[i] = v.(int)
-				}
-				schedule["months"] = monthsInt
-			} else {
-				schedule["months"] = []int{}
-			}
-
-			if wdays := scheduleMap["wdays"].([]interface{}); len(wdays) > 0 {
-				wdaysInt := make([]int, len(wdays))
-				for i, v := range wdays {
-					wdaysInt[i] = v.(int)
-				}
-				schedule["wdays"] = wdaysInt
-			} else {
-				schedule["wdays"] = []int{}
-			}
-
-			job["schedule"] = schedule
-		}
+		schedule := buildScheduleFromResourceData(d)
+		job["schedule"] = schedule
 	}
 
 	// Auth
@@ -680,4 +566,77 @@ func resourceJobDelete(d *schema.ResourceData, m interface{}) error {
 
 	d.SetId("")
 	return nil
+}
+
+// buildScheduleFromResourceData extracts schedule configuration from resource data and applies defaults
+func buildScheduleFromResourceData(d *schema.ResourceData) map[string]interface{} {
+	schedule := make(map[string]interface{})
+
+	if scheduleList := d.Get("schedule").([]interface{}); len(scheduleList) > 0 {
+		scheduleMap := scheduleList[0].(map[string]interface{})
+
+		schedule["timezone"] = scheduleMap["timezone"].(string)
+		schedule["expiresAt"] = scheduleMap["expires_at"].(int)
+
+		if hours := scheduleMap["hours"].([]interface{}); len(hours) > 0 {
+			hoursInt := make([]int, len(hours))
+			for i, v := range hours {
+				hoursInt[i] = v.(int)
+			}
+			schedule["hours"] = hoursInt
+		} else {
+			schedule["hours"] = []int{-1}
+		}
+
+		if mdays := scheduleMap["mdays"].([]interface{}); len(mdays) > 0 {
+			mdaysInt := make([]int, len(mdays))
+			for i, v := range mdays {
+				mdaysInt[i] = v.(int)
+			}
+			schedule["mdays"] = mdaysInt
+		} else {
+			schedule["mdays"] = []int{-1}
+		}
+
+		if minutes := scheduleMap["minutes"].([]interface{}); len(minutes) > 0 {
+			minutesInt := make([]int, len(minutes))
+			for i, v := range minutes {
+				minutesInt[i] = v.(int)
+			}
+			schedule["minutes"] = minutesInt
+		} else {
+			schedule["minutes"] = []int{-1}
+		}
+
+		if months := scheduleMap["months"].([]interface{}); len(months) > 0 {
+			monthsInt := make([]int, len(months))
+			for i, v := range months {
+				monthsInt[i] = v.(int)
+			}
+			schedule["months"] = monthsInt
+		} else {
+			schedule["months"] = []int{-1}
+		}
+
+		if wdays := scheduleMap["wdays"].([]interface{}); len(wdays) > 0 {
+			wdaysInt := make([]int, len(wdays))
+			for i, v := range wdays {
+				wdaysInt[i] = v.(int)
+			}
+			schedule["wdays"] = wdaysInt
+		} else {
+			schedule["wdays"] = []int{-1}
+		}
+	} else {
+		// No schedule block provided - use defaults
+		schedule["timezone"] = "UTC"
+		schedule["expiresAt"] = 0
+		schedule["hours"] = []int{-1}
+		schedule["mdays"] = []int{-1}
+		schedule["minutes"] = []int{-1}
+		schedule["months"] = []int{-1}
+		schedule["wdays"] = []int{-1}
+	}
+
+	return schedule
 }
