@@ -72,7 +72,7 @@ Install the provider locally for testing with Terraform:
 make install
 
 # Provider will be available as:
-# registry.terraform.io/plain-insure/cronjob version "dev"
+# registry.terraform.io/plain-insure/cronjoborg version "dev"
 ```
 
 ## Validation and Testing

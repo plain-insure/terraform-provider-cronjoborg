@@ -9,7 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/plain-insure/terraform-provider-cron-job.org/client"
+	"github.com/plain-insure/terraform-provider-cronjoborg/client"
 )
 
 func Provider() *schema.Provider {
@@ -30,9 +30,12 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"cronjob_job":         resourceJob(),
-			"cronjob_folder":      resourceFolder(),
-			"cronjob_status_page": resourceStatusPage(),
+			"cronjoborg_job": resourceJob(),
+		},
+		DataSourcesMap: map[string]*schema.Resource{
+			"cronjoborg_job":         dataSourceJob(),
+			"cronjoborg_jobs":        dataSourceJobs(),
+			"cronjoborg_job_history": dataSourceJobHistory(),
 		},
 		ConfigureContextFunc: providerConfigure,
 	}

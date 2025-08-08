@@ -53,14 +53,29 @@ func TestProvider(t *testing.T) {
 	}
 
 	expectedResources := []string{
-		"cronjob_job",
-		"cronjob_folder",
-		"cronjob_status_page",
+		"cronjoborg_job",
 	}
 
 	for _, resource := range expectedResources {
 		if _, ok := p.ResourcesMap[resource]; !ok {
 			t.Errorf("Resource %s should be in ResourcesMap", resource)
+		}
+	}
+
+	// Test datasources
+	if p.DataSourcesMap == nil {
+		t.Fatal("DataSourcesMap should not be nil")
+	}
+
+	expectedDataSources := []string{
+		"cronjoborg_job",
+		"cronjoborg_jobs",
+		"cronjoborg_job_history",
+	}
+
+	for _, dataSource := range expectedDataSources {
+		if _, ok := p.DataSourcesMap[dataSource]; !ok {
+			t.Errorf("DataSource %s should be in DataSourcesMap", dataSource)
 		}
 	}
 

@@ -35,3 +35,4 @@ website/vendor
 
 # Terraform provider binary
 terraform-provider-*
+test/

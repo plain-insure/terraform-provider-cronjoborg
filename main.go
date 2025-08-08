@@ -7,7 +7,7 @@ import (
 	"flag"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
-	"github.com/plain-insure/terraform-provider-cron-job.org/provider"
+	"github.com/plain-insure/terraform-provider-cronjoborg/provider"
 )
 
 // Run "go generate" to format example terraform files and generate the docs for the registry/website
@@ -38,7 +38,7 @@ func main() {
 	opts := &plugin.ServeOpts{
 		ProviderFunc: provider.Provider,
 		// TODO: update this string with the full name of your provider as used in your configs
-		ProviderAddr: "registry.terraform.io/plain-insure/cronjob",
+		ProviderAddr: "registry.terraform.io/plain-insure/cronjoborg",
 		Debug:        debugMode,
 	}
 

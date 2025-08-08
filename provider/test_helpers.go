@@ -15,7 +15,7 @@ import (
 // CLI command executed to create a provider server to which the CLI can
 // reattach.
 var testAccProviderFactories = map[string]func() (*schema.Provider, error){
-	"cronjob": func() (*schema.Provider, error) { //nolint:unparam // Required by Terraform test framework
+	"cronjoborg": func() (*schema.Provider, error) { //nolint:unparam // Required by Terraform test framework
 		return Provider(), nil
 	},
 }

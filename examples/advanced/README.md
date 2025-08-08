@@ -1,6 +1,6 @@
 # Advanced Example
 
-This example demonstrates advanced usage patterns of the cronjob provider including:
+This example demonstrates advanced usage patterns of the cronjoborg provider including:
 
 - Multiple folders for organization
 - Various types of monitoring and maintenance jobs
@@ -76,7 +76,7 @@ locals {
 You can use the `environment` variable to customize behavior:
 
 ```hcl
-resource "cronjob_job" "health_check" {
+resource "cronjoborg_job" "health_check" {
   title = "${var.environment}-website-health"
   url   = "https://${var.environment}.mywebsite.com/health"
 }

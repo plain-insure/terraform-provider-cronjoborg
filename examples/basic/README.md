@@ -1,6 +1,14 @@
 # Basic Example
 
-This example demonstrates the basic usage of the cronjob provider.
+This example demonstrates the basic usage of the cronjoborg provider, including both resource management and data sources.
+
+## Overview
+
+The cronjoborg provider supports full CRUD operations for cron jobs, including:
+- Creating new jobs with `cronjoborg_job` resource
+- Reading job details with `cronjoborg_job` data source
+- Listing all jobs with `cronjoborg_jobs` data source
+- Viewing job execution history with `cronjoborg_job_history` data source
 
 ## Usage
 
@@ -24,15 +32,18 @@ This example demonstrates the basic usage of the cronjob provider.
    terraform apply
    ```
 
-## What this creates
+## What this does
 
-- A folder named "Monitoring Jobs"
-- A cron job for health checking
-- A status page
+- Creates a new cron job with the title "Example Terraform Job"
+- Retrieves all jobs from your cron-job.org account
+- Shows details of the job we just created
+- Retrieves execution history for the created job
+- Outputs job count and summary information
 
-## Cleanup
+## Resources and Data Sources
 
-To destroy the created resources:
-```bash
-terraform destroy
-```
+This example uses:
+- `cronjoborg_job` resource: Creates and manages a cron job
+- `cronjoborg_jobs` data source: Lists all jobs in your account
+- `cronjoborg_job` data source: Gets details of a specific job
+- `cronjoborg_job_history` data source: Gets execution history for a job
