@@ -215,30 +215,58 @@ func TestGetJobs(t *testing.T) {
 func TestGetJob(t *testing.T) {
 	// Create a test server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/jobs" {
-			t.Errorf("Expected path to be /jobs, got %s", r.URL.Path)
+		if r.URL.Path != "/jobs/1" && r.URL.Path != "/jobs/999" {
+			t.Errorf("Expected path to be /jobs/1 or /jobs/999, got %s", r.URL.Path)
 		}
 
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(`{
-			"jobs": [
-				{
+		if r.URL.Path == "/jobs/1" {
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{
+				"jobDetails": {
 					"jobId": 1,
-					"title": "Test Job 1",
-					"url": "https://example.com/1",
 					"enabled": true,
+					"title": "Test Job 1",
 					"saveResponses": false,
+					"url": "https://example.com/1",
+					"lastStatus": 0,
+					"lastDuration": 0,
+					"lastExecution": 0,
+					"nextExecution": null,
+					"type": 0,
+					"requestTimeout": 300,
+					"redirectSuccess": false,
+					"folderId": 0,
 					"schedule": {
 						"timezone": "UTC",
+						"expiresAt": 0,
 						"hours": [10],
-						"mday": [-1],
+						"mdays": [-1],
 						"minutes": [0],
 						"months": [-1],
-						"wday": [-1]
+						"wdays": [-1]
+					},
+					"requestMethod": 0,
+					"auth": {
+						"enable": false,
+						"user": "",
+						"password": ""
+					},
+					"notification": {
+						"onFailure": false,
+						"onSuccess": false,
+						"onDisable": false
+					},
+					"extendedData": {
+						"headers": {},
+						"body": ""
 					}
 				}
-			]
-		}`))
+			}`))
+		} else {
+			// Return 404 for job 999
+			w.WriteHeader(http.StatusNotFound)
+			_, _ = w.Write([]byte(`{"error": "Job not found"}`))
+		}
 	}))
 	defer server.Close()
 
@@ -284,27 +312,60 @@ func TestGetJobHistory(t *testing.T) {
 		_, _ = w.Write([]byte(`{
 			"history": [
 				{
+					"jobLogId": 1001,
 					"jobId": 1,
-					"date": "2023-01-01T10:00:00Z",
-					"status": "OK",
+					"identifier": "1-23-01-1001",
+					"date": 1672574400,
+					"datePlanned": 1672574400,
+					"jitter": 50,
+					"url": "https://example.com",
+					"duration": 150,
+					"status": 1,
+					"statusText": "OK",
 					"httpStatus": 200,
-					"duration": 150
+					"headers": null,
+					"body": null,
+					"stats": {
+						"nameLookup": 1000,
+						"connect": 2000,
+						"appConnect": 0,
+						"preTransfer": 3000,
+						"startTransfer": 4000,
+						"total": 150000
+					}
 				},
 				{
+					"jobLogId": 1002,
 					"jobId": 1,
-					"date": "2023-01-01T09:00:00Z",
-					"status": "FAILED",
+					"identifier": "1-23-01-1002",
+					"date": 1672570800,
+					"datePlanned": 1672570800,
+					"jitter": 75,
+					"url": "https://example.com",
+					"duration": 100,
+					"status": 4,
+					"statusText": "FAILED",
 					"httpStatus": 404,
-					"duration": 100
+					"headers": null,
+					"body": null,
+					"stats": {
+						"nameLookup": 1200,
+						"connect": 2200,
+						"appConnect": 0,
+						"preTransfer": 3200,
+						"startTransfer": 4200,
+						"total": 100000
+					}
 				}
-			]
+			],
+			"predictions": [1672578000, 1672581600, 1672585200]
 		}`))
 	}))
 	defer server.Close()
 
 	client := NewClient(server.URL, "test-key")
 
-	history, err := client.GetJobHistory("1")
+	history, predictions, err := client.GetJobHistory("1")
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -313,12 +374,16 @@ func TestGetJobHistory(t *testing.T) {
 		t.Errorf("Expected 2 history entries, got %d", len(history))
 	}
 
-	if history[0].Status != "OK" {
-		t.Errorf("Expected first entry status to be 'OK', got '%s'", history[0].Status)
+	if len(predictions) != 3 {
+		t.Errorf("Expected 3 predictions, got %d", len(predictions))
 	}
 
-	if history[1].Status != "FAILED" {
-		t.Errorf("Expected second entry status to be 'FAILED', got '%s'", history[1].Status)
+	if history[0].Status != 1 {
+		t.Errorf("Expected first entry status to be 1 (OK), got %d", history[0].Status)
+	}
+
+	if history[1].Status != 4 {
+		t.Errorf("Expected second entry status to be 4 (HTTP error/FAILED), got %d", history[1].Status)
 	}
 }
 
@@ -425,13 +490,9 @@ func TestClient_DeleteJob(t *testing.T) {
 			t.Errorf("Expected path '/jobs/123', got '%s'", r.URL.Path)
 		}
 
-		var requestBody map[string]interface{}
-		if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
-			t.Errorf("Failed to decode request body: %v", err)
-		}
-
-		if requestBody["jobId"] != "123" {
-			t.Errorf("Expected jobId '123', got '%v'", requestBody["jobId"])
+		// Check that no request body is sent for DELETE
+		if r.ContentLength > 0 {
+			t.Error("DELETE request should not have a body")
 		}
 
 		w.WriteHeader(http.StatusOK)
@@ -460,9 +521,43 @@ func TestClient_GetJobDetails(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprintln(w, `{
 			"jobDetails": {
+				"jobId": 123,
+				"enabled": true,
 				"title": "Test Job",
+				"saveResponses": false,
 				"url": "https://example.com",
-				"enabled": true
+				"lastStatus": 0,
+				"lastDuration": 0,
+				"lastExecution": 0,
+				"nextExecution": null,
+				"type": 0,
+				"requestTimeout": 300,
+				"redirectSuccess": false,
+				"folderId": 0,
+				"schedule": {
+					"timezone": "UTC",
+					"expiresAt": 0,
+					"hours": [-1],
+					"mdays": [-1],
+					"minutes": [-1],
+					"months": [-1],
+					"wdays": [-1]
+				},
+				"requestMethod": 0,
+				"auth": {
+					"enable": false,
+					"user": "",
+					"password": ""
+				},
+				"notification": {
+					"onFailure": false,
+					"onSuccess": false,
+					"onDisable": false
+				},
+				"extendedData": {
+					"headers": {},
+					"body": ""
+				}
 			}
 		}`)
 	}))
@@ -475,11 +570,11 @@ func TestClient_GetJobDetails(t *testing.T) {
 		t.Fatalf("Expected no error, got %v", err)
 	}
 
-	if details["title"] != "Test Job" {
-		t.Errorf("Expected title 'Test Job', got '%v'", details["title"])
+	if details.Title != "Test Job" {
+		t.Errorf("Expected title 'Test Job', got '%s'", details.Title)
 	}
 
-	if details["url"] != "https://example.com" {
-		t.Errorf("Expected url 'https://example.com', got '%v'", details["url"])
+	if details.URL != "https://example.com" {
+		t.Errorf("Expected url 'https://example.com', got '%s'", details.URL)
 	}
 }
