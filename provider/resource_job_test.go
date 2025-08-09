@@ -64,12 +64,19 @@ func TestBuildSchedule_NoScheduleBlock(t *testing.T) {
 	// Test that when no schedule block is provided, defaults are used
 	resource := resourceJob()
 	resourceData := resource.TestResourceData()
-	resourceData.Set("title", "Test Job")
-	resourceData.Set("url", "https://example.com")
+	if err := resourceData.Set("title", "Test Job"); err != nil {
+		t.Fatalf("Error setting title: %v", err)
+	}
+	if err := resourceData.Set("url", "https://example.com"); err != nil {
+		t.Fatalf("Error setting url: %v", err)
+	}
 
 	// No schedule block set
 
-	schedule := buildScheduleFromResourceData(resourceData)
+	schedule, err := buildScheduleFromResourceData(resourceData)
+	if err != nil {
+		t.Fatalf("Error building schedule: %v", err)
+	}
 
 	// Check default values
 	if schedule["timezone"] != "UTC" {
@@ -107,8 +114,12 @@ func TestBuildSchedule_PartialScheduleBlock(t *testing.T) {
 	// Test that when schedule block is provided with some fields, others default to [-1]
 	resource := resourceJob()
 	resourceData := resource.TestResourceData()
-	resourceData.Set("title", "Test Job")
-	resourceData.Set("url", "https://example.com")
+	if err := resourceData.Set("title", "Test Job"); err != nil {
+		t.Fatalf("Error setting title: %v", err)
+	}
+	if err := resourceData.Set("url", "https://example.com"); err != nil {
+		t.Fatalf("Error setting url: %v", err)
+	}
 
 	// Set schedule with only hours specified
 	schedule := []interface{}{
@@ -119,9 +130,14 @@ func TestBuildSchedule_PartialScheduleBlock(t *testing.T) {
 			// mdays, minutes, months, wdays not specified
 		},
 	}
-	resourceData.Set("schedule", schedule)
+	if err := resourceData.Set("schedule", schedule); err != nil {
+		t.Fatalf("Error setting schedule: %v", err)
+	}
 
-	result := buildScheduleFromResourceData(resourceData)
+	result, err := buildScheduleFromResourceData(resourceData)
+	if err != nil {
+		t.Fatalf("Error building schedule: %v", err)
+	}
 
 	// Check that explicitly set values are preserved
 	if result["timezone"] != "America/New_York" {
@@ -167,8 +183,12 @@ func TestBuildSchedule_EmptyScheduleFields(t *testing.T) {
 	// Test that when schedule fields are explicitly set to empty arrays, they default to [-1]
 	resource := resourceJob()
 	resourceData := resource.TestResourceData()
-	resourceData.Set("title", "Test Job")
-	resourceData.Set("url", "https://example.com")
+	if err := resourceData.Set("title", "Test Job"); err != nil {
+		t.Fatalf("Error setting title: %v", err)
+	}
+	if err := resourceData.Set("url", "https://example.com"); err != nil {
+		t.Fatalf("Error setting url: %v", err)
+	}
 
 	// Set schedule with empty arrays
 	schedule := []interface{}{
@@ -182,9 +202,14 @@ func TestBuildSchedule_EmptyScheduleFields(t *testing.T) {
 			"wdays":      []interface{}{}, // Empty array
 		},
 	}
-	resourceData.Set("schedule", schedule)
+	if err := resourceData.Set("schedule", schedule); err != nil {
+		t.Fatalf("Error setting schedule: %v", err)
+	}
 
-	result := buildScheduleFromResourceData(resourceData)
+	result, err := buildScheduleFromResourceData(resourceData)
+	if err != nil {
+		t.Fatalf("Error building schedule: %v", err)
+	}
 
 	// Check that all fields default to [-1]
 	checkScheduleField := func(fieldName string, expected []int) {
