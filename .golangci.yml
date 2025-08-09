@@ -22,6 +22,13 @@ issues:
     - third_party
     - builtin
     - examples
+  exclude:
+    # Allow usage of deprecated resource.Create/Read/Update/Delete methods
+    # These are still valid and working, just have newer Context alternatives
+    - "SA1019: resource.Create is deprecated"
+    - "SA1019: resource.Read is deprecated" 
+    - "SA1019: resource.Update is deprecated"
+    - "SA1019: resource.Delete is deprecated"
 
 run:
   timeout: 5m
