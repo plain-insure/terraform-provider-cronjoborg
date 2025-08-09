@@ -274,60 +274,170 @@ func resourceJobCreate(d *schema.ResourceData, m interface{}) error {
 	job := make(map[string]interface{})
 
 	// Required fields
-	job["title"] = d.Get("title").(string)
-	job["url"] = d.Get("url").(string)
+	title, ok := d.Get("title").(string)
+	if !ok {
+		return fmt.Errorf("title must be a string")
+	}
+	job["title"] = title
+
+	url, ok := d.Get("url").(string)
+	if !ok {
+		return fmt.Errorf("url must be a string")
+	}
+	job["url"] = url
 
 	// Optional fields with defaults
-	job["enabled"] = d.Get("enabled").(bool)
-	job["saveResponses"] = d.Get("save_responses").(bool)
-	job["requestTimeout"] = d.Get("request_timeout").(int)
-	job["redirectSuccess"] = d.Get("redirect_success").(bool)
-	job["folderId"] = d.Get("folder_id").(int)
-	job["requestMethod"] = d.Get("request_method").(int)
+	enabled, ok := d.Get("enabled").(bool)
+	if !ok {
+		return fmt.Errorf("enabled must be a boolean")
+	}
+	job["enabled"] = enabled
+
+	saveResponses, ok := d.Get("save_responses").(bool)
+	if !ok {
+		return fmt.Errorf("save_responses must be a boolean")
+	}
+	job["saveResponses"] = saveResponses
+
+	requestTimeout, ok := d.Get("request_timeout").(int)
+	if !ok {
+		return fmt.Errorf("request_timeout must be an integer")
+	}
+	job["requestTimeout"] = requestTimeout
+
+	redirectSuccess, ok := d.Get("redirect_success").(bool)
+	if !ok {
+		return fmt.Errorf("redirect_success must be a boolean")
+	}
+	job["redirectSuccess"] = redirectSuccess
+
+	folderId, ok := d.Get("folder_id").(int)
+	if !ok {
+		return fmt.Errorf("folder_id must be an integer")
+	}
+	job["folderId"] = folderId
+
+	requestMethod, ok := d.Get("request_method").(int)
+	if !ok {
+		return fmt.Errorf("request_method must be an integer")
+	}
+	job["requestMethod"] = requestMethod
 
 	// Schedule - always include schedule with default values
-	schedule := buildScheduleFromResourceData(d)
+	schedule, err := buildScheduleFromResourceData(d)
+	if err != nil {
+		return err
+	}
 	job["schedule"] = schedule
 
 	// Auth
-	if authList := d.Get("auth").([]interface{}); len(authList) > 0 {
-		authMap := authList[0].(map[string]interface{})
-		auth := map[string]interface{}{
-			"enable":   authMap["enable"].(bool),
-			"user":     authMap["user"].(string),
-			"password": authMap["password"].(string),
+	if authListRaw := d.Get("auth"); authListRaw != nil {
+		authList, ok := authListRaw.([]interface{})
+		if !ok {
+			return fmt.Errorf("auth must be a list")
 		}
-		job["auth"] = auth
+		if len(authList) > 0 {
+			authMap, ok := authList[0].(map[string]interface{})
+			if !ok {
+				return fmt.Errorf("auth element must be a map")
+			}
+			enable, ok := authMap["enable"].(bool)
+			if !ok {
+				return fmt.Errorf("auth.enable must be a boolean")
+			}
+			user, ok := authMap["user"].(string)
+			if !ok {
+				return fmt.Errorf("auth.user must be a string")
+			}
+			password, ok := authMap["password"].(string)
+			if !ok {
+				return fmt.Errorf("auth.password must be a string")
+			}
+			auth := map[string]interface{}{
+				"enable":   enable,
+				"user":     user,
+				"password": password,
+			}
+			job["auth"] = auth
+		}
 	}
 
 	// Notification
-	if notificationList := d.Get("notification").([]interface{}); len(notificationList) > 0 {
-		notificationMap := notificationList[0].(map[string]interface{})
-		notification := map[string]interface{}{
-			"onFailure": notificationMap["on_failure"].(bool),
-			"onSuccess": notificationMap["on_success"].(bool),
-			"onDisable": notificationMap["on_disable"].(bool),
+	if notificationListRaw := d.Get("notification"); notificationListRaw != nil {
+		notificationList, ok := notificationListRaw.([]interface{})
+		if !ok {
+			return fmt.Errorf("notification must be a list")
 		}
-		job["notification"] = notification
+		if len(notificationList) > 0 {
+			notificationMap, ok := notificationList[0].(map[string]interface{})
+			if !ok {
+				return fmt.Errorf("notification element must be a map")
+			}
+			onFailure, ok := notificationMap["on_failure"].(bool)
+			if !ok {
+				return fmt.Errorf("notification.on_failure must be a boolean")
+			}
+			onSuccess, ok := notificationMap["on_success"].(bool)
+			if !ok {
+				return fmt.Errorf("notification.on_success must be a boolean")
+			}
+			onDisable, ok := notificationMap["on_disable"].(bool)
+			if !ok {
+				return fmt.Errorf("notification.on_disable must be a boolean")
+			}
+			notification := map[string]interface{}{
+				"onFailure": onFailure,
+				"onSuccess": onSuccess,
+				"onDisable": onDisable,
+			}
+			job["notification"] = notification
+		}
 	}
 
 	// Extended Data
-	if extendedDataList := d.Get("extended_data").([]interface{}); len(extendedDataList) > 0 {
-		extendedDataMap := extendedDataList[0].(map[string]interface{})
-		extendedData := make(map[string]interface{})
-
-		if headers := extendedDataMap["headers"].(map[string]interface{}); len(headers) > 0 {
-			stringHeaders := make(map[string]string)
-			for k, v := range headers {
-				stringHeaders[k] = v.(string)
-			}
-			extendedData["headers"] = stringHeaders
-		} else {
-			extendedData["headers"] = map[string]string{}
+	if extendedDataListRaw := d.Get("extended_data"); extendedDataListRaw != nil {
+		extendedDataList, ok := extendedDataListRaw.([]interface{})
+		if !ok {
+			return fmt.Errorf("extended_data must be a list")
 		}
+		if len(extendedDataList) > 0 {
+			extendedDataMap, ok := extendedDataList[0].(map[string]interface{})
+			if !ok {
+				return fmt.Errorf("extended_data element must be a map")
+			}
+			extendedData := make(map[string]interface{})
 
-		extendedData["body"] = extendedDataMap["body"].(string)
-		job["extendedData"] = extendedData
+			if headersRaw, exists := extendedDataMap["headers"]; exists {
+				headers, ok := headersRaw.(map[string]interface{})
+				if !ok {
+					return fmt.Errorf("extended_data.headers must be a map")
+				}
+				if len(headers) > 0 {
+					stringHeaders := make(map[string]string)
+					for k, v := range headers {
+						vStr, ok := v.(string)
+						if !ok {
+							return fmt.Errorf("extended_data.headers values must be strings")
+						}
+						stringHeaders[k] = vStr
+					}
+					extendedData["headers"] = stringHeaders
+				} else {
+					extendedData["headers"] = map[string]string{}
+				}
+			} else {
+				extendedData["headers"] = map[string]string{}
+			}
+
+			if bodyRaw, exists := extendedDataMap["body"]; exists {
+				body, ok := bodyRaw.(string)
+				if !ok {
+					return fmt.Errorf("extended_data.body must be a string")
+				}
+				extendedData["body"] = body
+			}
+			job["extendedData"] = extendedData
+		}
 	}
 
 	jobID, err := c.CreateJob(job)
@@ -465,80 +575,184 @@ func resourceJobUpdate(d *schema.ResourceData, m interface{}) error {
 
 	// Check each field for changes
 	if d.HasChange("title") {
-		job["title"] = d.Get("title").(string)
+		title, ok := d.Get("title").(string)
+		if !ok {
+			return fmt.Errorf("title must be a string")
+		}
+		job["title"] = title
 	}
 	if d.HasChange("url") {
-		job["url"] = d.Get("url").(string)
+		url, ok := d.Get("url").(string)
+		if !ok {
+			return fmt.Errorf("url must be a string")
+		}
+		job["url"] = url
 	}
 	if d.HasChange("enabled") {
-		job["enabled"] = d.Get("enabled").(bool)
+		enabled, ok := d.Get("enabled").(bool)
+		if !ok {
+			return fmt.Errorf("enabled must be a boolean")
+		}
+		job["enabled"] = enabled
 	}
 	if d.HasChange("save_responses") {
-		job["saveResponses"] = d.Get("save_responses").(bool)
+		saveResponses, ok := d.Get("save_responses").(bool)
+		if !ok {
+			return fmt.Errorf("save_responses must be a boolean")
+		}
+		job["saveResponses"] = saveResponses
 	}
 	if d.HasChange("request_timeout") {
-		job["requestTimeout"] = d.Get("request_timeout").(int)
+		requestTimeout, ok := d.Get("request_timeout").(int)
+		if !ok {
+			return fmt.Errorf("request_timeout must be an integer")
+		}
+		job["requestTimeout"] = requestTimeout
 	}
 	if d.HasChange("redirect_success") {
-		job["redirectSuccess"] = d.Get("redirect_success").(bool)
+		redirectSuccess, ok := d.Get("redirect_success").(bool)
+		if !ok {
+			return fmt.Errorf("redirect_success must be a boolean")
+		}
+		job["redirectSuccess"] = redirectSuccess
 	}
 	if d.HasChange("folder_id") {
-		job["folderId"] = d.Get("folder_id").(int)
+		folderId, ok := d.Get("folder_id").(int)
+		if !ok {
+			return fmt.Errorf("folder_id must be an integer")
+		}
+		job["folderId"] = folderId
 	}
 	if d.HasChange("request_method") {
-		job["requestMethod"] = d.Get("request_method").(int)
+		requestMethod, ok := d.Get("request_method").(int)
+		if !ok {
+			return fmt.Errorf("request_method must be an integer")
+		}
+		job["requestMethod"] = requestMethod
 	}
 
 	// Schedule
 	if d.HasChange("schedule") {
-		schedule := buildScheduleFromResourceData(d)
+		schedule, err := buildScheduleFromResourceData(d)
+		if err != nil {
+			return err
+		}
 		job["schedule"] = schedule
 	}
 
 	// Auth
 	if d.HasChange("auth") {
-		if authList := d.Get("auth").([]interface{}); len(authList) > 0 {
-			authMap := authList[0].(map[string]interface{})
-			auth := map[string]interface{}{
-				"enable":   authMap["enable"].(bool),
-				"user":     authMap["user"].(string),
-				"password": authMap["password"].(string),
+		if authListRaw := d.Get("auth"); authListRaw != nil {
+			authList, ok := authListRaw.([]interface{})
+			if !ok {
+				return fmt.Errorf("auth must be a list")
 			}
-			job["auth"] = auth
+			if len(authList) > 0 {
+				authMap, ok := authList[0].(map[string]interface{})
+				if !ok {
+					return fmt.Errorf("auth element must be a map")
+				}
+				enable, ok := authMap["enable"].(bool)
+				if !ok {
+					return fmt.Errorf("auth.enable must be a boolean")
+				}
+				user, ok := authMap["user"].(string)
+				if !ok {
+					return fmt.Errorf("auth.user must be a string")
+				}
+				password, ok := authMap["password"].(string)
+				if !ok {
+					return fmt.Errorf("auth.password must be a string")
+				}
+				auth := map[string]interface{}{
+					"enable":   enable,
+					"user":     user,
+					"password": password,
+				}
+				job["auth"] = auth
+			}
 		}
 	}
 
 	// Notification
 	if d.HasChange("notification") {
-		if notificationList := d.Get("notification").([]interface{}); len(notificationList) > 0 {
-			notificationMap := notificationList[0].(map[string]interface{})
-			notification := map[string]interface{}{
-				"onFailure": notificationMap["on_failure"].(bool),
-				"onSuccess": notificationMap["on_success"].(bool),
-				"onDisable": notificationMap["on_disable"].(bool),
+		if notificationListRaw := d.Get("notification"); notificationListRaw != nil {
+			notificationList, ok := notificationListRaw.([]interface{})
+			if !ok {
+				return fmt.Errorf("notification must be a list")
 			}
-			job["notification"] = notification
+			if len(notificationList) > 0 {
+				notificationMap, ok := notificationList[0].(map[string]interface{})
+				if !ok {
+					return fmt.Errorf("notification element must be a map")
+				}
+				onFailure, ok := notificationMap["on_failure"].(bool)
+				if !ok {
+					return fmt.Errorf("notification.on_failure must be a boolean")
+				}
+				onSuccess, ok := notificationMap["on_success"].(bool)
+				if !ok {
+					return fmt.Errorf("notification.on_success must be a boolean")
+				}
+				onDisable, ok := notificationMap["on_disable"].(bool)
+				if !ok {
+					return fmt.Errorf("notification.on_disable must be a boolean")
+				}
+				notification := map[string]interface{}{
+					"onFailure": onFailure,
+					"onSuccess": onSuccess,
+					"onDisable": onDisable,
+				}
+				job["notification"] = notification
+			}
 		}
 	}
 
 	// Extended Data
 	if d.HasChange("extended_data") {
-		if extendedDataList := d.Get("extended_data").([]interface{}); len(extendedDataList) > 0 {
-			extendedDataMap := extendedDataList[0].(map[string]interface{})
-			extendedData := make(map[string]interface{})
-
-			if headers := extendedDataMap["headers"].(map[string]interface{}); len(headers) > 0 {
-				stringHeaders := make(map[string]string)
-				for k, v := range headers {
-					stringHeaders[k] = v.(string)
-				}
-				extendedData["headers"] = stringHeaders
-			} else {
-				extendedData["headers"] = map[string]string{}
+		if extendedDataListRaw := d.Get("extended_data"); extendedDataListRaw != nil {
+			extendedDataList, ok := extendedDataListRaw.([]interface{})
+			if !ok {
+				return fmt.Errorf("extended_data must be a list")
 			}
+			if len(extendedDataList) > 0 {
+				extendedDataMap, ok := extendedDataList[0].(map[string]interface{})
+				if !ok {
+					return fmt.Errorf("extended_data element must be a map")
+				}
+				extendedData := make(map[string]interface{})
 
-			extendedData["body"] = extendedDataMap["body"].(string)
-			job["extendedData"] = extendedData
+				if headersRaw, exists := extendedDataMap["headers"]; exists {
+					headers, ok := headersRaw.(map[string]interface{})
+					if !ok {
+						return fmt.Errorf("extended_data.headers must be a map")
+					}
+					if len(headers) > 0 {
+						stringHeaders := make(map[string]string)
+						for k, v := range headers {
+							vStr, ok := v.(string)
+							if !ok {
+								return fmt.Errorf("extended_data.headers values must be strings")
+							}
+							stringHeaders[k] = vStr
+						}
+						extendedData["headers"] = stringHeaders
+					} else {
+						extendedData["headers"] = map[string]string{}
+					}
+				} else {
+					extendedData["headers"] = map[string]string{}
+				}
+
+				if bodyRaw, exists := extendedDataMap["body"]; exists {
+					body, ok := bodyRaw.(string)
+					if !ok {
+						return fmt.Errorf("extended_data.body must be a string")
+					}
+					extendedData["body"] = body
+				}
+				job["extendedData"] = extendedData
+			}
 		}
 	}
 
@@ -568,63 +782,151 @@ func resourceJobDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-// buildScheduleFromResourceData extracts schedule configuration from resource data and applies defaults
-func buildScheduleFromResourceData(d *schema.ResourceData) map[string]interface{} {
+// buildScheduleFromResourceData extracts schedule configuration from resource data and applies defaults.
+func buildScheduleFromResourceData(d *schema.ResourceData) (map[string]interface{}, error) {
 	schedule := make(map[string]interface{})
 
-	if scheduleList := d.Get("schedule").([]interface{}); len(scheduleList) > 0 {
-		scheduleMap := scheduleList[0].(map[string]interface{})
-
-		schedule["timezone"] = scheduleMap["timezone"].(string)
-		schedule["expiresAt"] = scheduleMap["expires_at"].(int)
-
-		if hours := scheduleMap["hours"].([]interface{}); len(hours) > 0 {
-			hoursInt := make([]int, len(hours))
-			for i, v := range hours {
-				hoursInt[i] = v.(int)
+	scheduleListRaw := d.Get("schedule")
+	if scheduleListRaw != nil {
+		scheduleList, ok := scheduleListRaw.([]interface{})
+		if !ok {
+			return nil, fmt.Errorf("schedule must be a list")
+		}
+		if len(scheduleList) > 0 {
+			scheduleMap, ok := scheduleList[0].(map[string]interface{})
+			if !ok {
+				return nil, fmt.Errorf("schedule element must be a map")
 			}
-			schedule["hours"] = hoursInt
+
+			timezone, ok := scheduleMap["timezone"].(string)
+			if !ok {
+				return nil, fmt.Errorf("schedule.timezone must be a string")
+			}
+			schedule["timezone"] = timezone
+
+			expiresAt, ok := scheduleMap["expires_at"].(int)
+			if !ok {
+				return nil, fmt.Errorf("schedule.expires_at must be an integer")
+			}
+			schedule["expiresAt"] = expiresAt
+
+			if hoursRaw, exists := scheduleMap["hours"]; exists {
+				hours, ok := hoursRaw.([]interface{})
+				if !ok {
+					return nil, fmt.Errorf("schedule.hours must be a list")
+				}
+				if len(hours) > 0 {
+					hoursInt := make([]int, len(hours))
+					for i, v := range hours {
+						vInt, ok := v.(int)
+						if !ok {
+							return nil, fmt.Errorf("schedule.hours values must be integers")
+						}
+						hoursInt[i] = vInt
+					}
+					schedule["hours"] = hoursInt
+				} else {
+					schedule["hours"] = []int{-1}
+				}
+			} else {
+				schedule["hours"] = []int{-1}
+			}
+
+			if mdaysRaw, exists := scheduleMap["mdays"]; exists {
+				mdays, ok := mdaysRaw.([]interface{})
+				if !ok {
+					return nil, fmt.Errorf("schedule.mdays must be a list")
+				}
+				if len(mdays) > 0 {
+					mdaysInt := make([]int, len(mdays))
+					for i, v := range mdays {
+						vInt, ok := v.(int)
+						if !ok {
+							return nil, fmt.Errorf("schedule.mdays values must be integers")
+						}
+						mdaysInt[i] = vInt
+					}
+					schedule["mdays"] = mdaysInt
+				} else {
+					schedule["mdays"] = []int{-1}
+				}
+			} else {
+				schedule["mdays"] = []int{-1}
+			}
+
+			if minutesRaw, exists := scheduleMap["minutes"]; exists {
+				minutes, ok := minutesRaw.([]interface{})
+				if !ok {
+					return nil, fmt.Errorf("schedule.minutes must be a list")
+				}
+				if len(minutes) > 0 {
+					minutesInt := make([]int, len(minutes))
+					for i, v := range minutes {
+						vInt, ok := v.(int)
+						if !ok {
+							return nil, fmt.Errorf("schedule.minutes values must be integers")
+						}
+						minutesInt[i] = vInt
+					}
+					schedule["minutes"] = minutesInt
+				} else {
+					schedule["minutes"] = []int{-1}
+				}
+			} else {
+				schedule["minutes"] = []int{-1}
+			}
+
+			if monthsRaw, exists := scheduleMap["months"]; exists {
+				months, ok := monthsRaw.([]interface{})
+				if !ok {
+					return nil, fmt.Errorf("schedule.months must be a list")
+				}
+				if len(months) > 0 {
+					monthsInt := make([]int, len(months))
+					for i, v := range months {
+						vInt, ok := v.(int)
+						if !ok {
+							return nil, fmt.Errorf("schedule.months values must be integers")
+						}
+						monthsInt[i] = vInt
+					}
+					schedule["months"] = monthsInt
+				} else {
+					schedule["months"] = []int{-1}
+				}
+			} else {
+				schedule["months"] = []int{-1}
+			}
+
+			if wdaysRaw, exists := scheduleMap["wdays"]; exists {
+				wdays, ok := wdaysRaw.([]interface{})
+				if !ok {
+					return nil, fmt.Errorf("schedule.wdays must be a list")
+				}
+				if len(wdays) > 0 {
+					wdaysInt := make([]int, len(wdays))
+					for i, v := range wdays {
+						vInt, ok := v.(int)
+						if !ok {
+							return nil, fmt.Errorf("schedule.wdays values must be integers")
+						}
+						wdaysInt[i] = vInt
+					}
+					schedule["wdays"] = wdaysInt
+				} else {
+					schedule["wdays"] = []int{-1}
+				}
+			} else {
+				schedule["wdays"] = []int{-1}
+			}
 		} else {
+			// Empty schedule list - use defaults
+			schedule["timezone"] = "UTC"
+			schedule["expiresAt"] = 0
 			schedule["hours"] = []int{-1}
-		}
-
-		if mdays := scheduleMap["mdays"].([]interface{}); len(mdays) > 0 {
-			mdaysInt := make([]int, len(mdays))
-			for i, v := range mdays {
-				mdaysInt[i] = v.(int)
-			}
-			schedule["mdays"] = mdaysInt
-		} else {
 			schedule["mdays"] = []int{-1}
-		}
-
-		if minutes := scheduleMap["minutes"].([]interface{}); len(minutes) > 0 {
-			minutesInt := make([]int, len(minutes))
-			for i, v := range minutes {
-				minutesInt[i] = v.(int)
-			}
-			schedule["minutes"] = minutesInt
-		} else {
 			schedule["minutes"] = []int{-1}
-		}
-
-		if months := scheduleMap["months"].([]interface{}); len(months) > 0 {
-			monthsInt := make([]int, len(months))
-			for i, v := range months {
-				monthsInt[i] = v.(int)
-			}
-			schedule["months"] = monthsInt
-		} else {
 			schedule["months"] = []int{-1}
-		}
-
-		if wdays := scheduleMap["wdays"].([]interface{}); len(wdays) > 0 {
-			wdaysInt := make([]int, len(wdays))
-			for i, v := range wdays {
-				wdaysInt[i] = v.(int)
-			}
-			schedule["wdays"] = wdaysInt
-		} else {
 			schedule["wdays"] = []int{-1}
 		}
 	} else {
@@ -638,5 +940,5 @@ func buildScheduleFromResourceData(d *schema.ResourceData) map[string]interface{
 		schedule["wdays"] = []int{-1}
 	}
 
-	return schedule
+	return schedule, nil
 }
