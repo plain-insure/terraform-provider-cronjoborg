@@ -1,4 +1,4 @@
-version: 1
+version: 2
 
 before:
   hooks:
@@ -27,8 +27,7 @@ builds:
         goarch: '386'
 
 archives:
-  - format: zip
-    name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+  - name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
 
 checksum:
   name_template: '{{ .ProjectName }}_{{ .Version }}_SHA256SUMS'
@@ -51,4 +50,4 @@ release:
       name_template: '{{ .ProjectName }}_{{ .Version }}_manifest.json'
 
 changelog:
-  skip: true
+  disable: true
