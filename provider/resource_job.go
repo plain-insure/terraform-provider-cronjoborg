@@ -235,26 +235,6 @@ func resourceJob() *schema.Resource {
 				Computed:    true,
 				Description: "The unique identifier of the job",
 			},
-			"last_status": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Last execution status",
-			},
-			"last_duration": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Last execution duration in milliseconds",
-			},
-			"last_execution": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Unix timestamp of last execution (in seconds)",
-			},
-			"next_execution": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Unix timestamp of predicted next execution (in seconds)",
-			},
 			"type": {
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -479,20 +459,6 @@ func resourceJobRead(d *schema.ResourceData, m interface{}) error {
 	}
 	if err := d.Set("save_responses", jobDetails.SaveResponses); err != nil {
 		return fmt.Errorf("error setting save_responses: %w", err)
-	}
-	if err := d.Set("last_status", jobDetails.LastStatus); err != nil {
-		return fmt.Errorf("error setting last_status: %w", err)
-	}
-	if err := d.Set("last_duration", jobDetails.LastDuration); err != nil {
-		return fmt.Errorf("error setting last_duration: %w", err)
-	}
-	if err := d.Set("last_execution", jobDetails.LastExecution); err != nil {
-		return fmt.Errorf("error setting last_execution: %w", err)
-	}
-	if jobDetails.NextExecution != nil {
-		if err := d.Set("next_execution", *jobDetails.NextExecution); err != nil {
-			return fmt.Errorf("error setting next_execution: %w", err)
-		}
 	}
 	if err := d.Set("type", jobDetails.Type); err != nil {
 		return fmt.Errorf("error setting type: %w", err)
