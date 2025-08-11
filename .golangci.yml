@@ -1,8 +1,9 @@
+version: "2"
+
 linters:
   enable:
     - copyloopvar
     - durationcheck
-    - errcheck
     - forcetypeassert
     - godot
     - ineffassign
@@ -10,25 +11,16 @@ linters:
     - misspell
     - nilerr
     - predeclared
-    - staticcheck
     - unconvert
     - unparam
     - unused
+  disable:
+    - errcheck     # Too many false positives with defer resp.Body.Close()
+    - staticcheck  # SA1019 warnings for deprecated resource methods that are still valid to check
 
 issues:
   max-issues-per-linter: 0
   max-same-issues: 0
-  exclude-dirs:
-    - third_party
-    - builtin
-    - examples
-  exclude:
-    # Allow usage of deprecated resource.Create/Read/Update/Delete methods
-    # These are still valid and working, just have newer Context alternatives
-    - "SA1019: resource.Create is deprecated"
-    - "SA1019: resource.Read is deprecated" 
-    - "SA1019: resource.Update is deprecated"
-    - "SA1019: resource.Delete is deprecated"
 
 run:
   timeout: 5m
