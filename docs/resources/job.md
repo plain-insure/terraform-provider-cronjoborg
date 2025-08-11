@@ -73,10 +73,6 @@ data "cronjoborg_job_history" "example_history" {
 
 - `id` (String) The ID of this resource.
 - `job_id` (Number) The unique identifier of the job
-- `last_duration` (Number) Last execution duration in milliseconds
-- `last_execution` (Number) Unix timestamp of last execution (in seconds)
-- `last_status` (Number) Last execution status
-- `next_execution` (Number) Unix timestamp of predicted next execution (in seconds)
 - `type` (Number) Job type (0=Default job, 1=Monitoring job)
 
 <a id="nestedblock--auth"></a>
