@@ -695,7 +695,7 @@ func TestClient_URLConstruction(t *testing.T) {
 	}
 }
 
-// TestClient_RealHTTPURLConstruction verifies that the actual HTTP requests use the expected URLs
+// TestClient_RealHTTPURLConstruction verifies that the actual HTTP requests use the expected URLs.
 func TestClient_RealHTTPURLConstruction(t *testing.T) {
 	testCases := []struct {
 		name         string
@@ -705,13 +705,13 @@ func TestClient_RealHTTPURLConstruction(t *testing.T) {
 	}{
 		{
 			name:         "Normalized base URL constructs correct endpoint",
-			baseURL:      "https://api.cron-job.org",  // normalized (no trailing slash)
+			baseURL:      "https://api.cron-job.org", // normalized (no trailing slash)
 			path:         "/jobs",
 			expectedPath: "/jobs",
 		},
 		{
 			name:         "Custom normalized URL constructs correct endpoint",
-			baseURL:      "https://example.com/api/v1",  // normalized (no trailing slash)
+			baseURL:      "https://example.com/api/v1", // normalized (no trailing slash)
 			path:         "/jobs/123/history",
 			expectedPath: "/jobs/123/history",
 		},
@@ -730,10 +730,10 @@ func TestClient_RealHTTPURLConstruction(t *testing.T) {
 
 			// Create client with normalized base URL
 			client := NewClient(tc.baseURL, "test-key")
-			
+
 			// Override base URL to point to our test server
 			client.BaseURL = server.URL
-			
+
 			// Make the request
 			_, err := client.doRequest("GET", tc.path, nil)
 			if err != nil {

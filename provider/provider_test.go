@@ -186,7 +186,10 @@ func TestProvider_DefaultAPIURLHasNoTrailingSlash(t *testing.T) {
 
 	// Check the default value in schema
 	apiURLSchema := p.Schema["api_url"]
-	defaultValue := apiURLSchema.Default.(string)
+	defaultValue, ok := apiURLSchema.Default.(string)
+	if !ok {
+		t.Fatal("Default API URL should be a string")
+	}
 
 	if strings.HasSuffix(defaultValue, "/") {
 		t.Errorf("Default API URL should not have trailing slash, got '%s'", defaultValue)
