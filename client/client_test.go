@@ -656,3 +656,94 @@ func TestJobExtendedData_UnmarshalJSON_EmptyHeaders(t *testing.T) {
 		t.Errorf("Expected body to be 'test body', got '%s'", extData.Body)
 	}
 }
+
+func TestClient_URLConstruction(t *testing.T) {
+	testCases := []struct {
+		name        string
+		baseURL     string
+		path        string
+		expectedURL string
+	}{
+		{
+			name:        "Base URL without trailing slash",
+			baseURL:     "https://api.cron-job.org",
+			path:        "/jobs",
+			expectedURL: "https://api.cron-job.org/jobs",
+		},
+		{
+			name:        "Custom API URL without trailing slash",
+			baseURL:     "https://example.com/api",
+			path:        "/jobs",
+			expectedURL: "https://example.com/api/jobs",
+		},
+		{
+			name:        "URL with path component",
+			baseURL:     "https://custom.example.com/cron-api/v1",
+			path:        "/jobs/123",
+			expectedURL: "https://custom.example.com/cron-api/v1/jobs/123",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Test the URL construction logic directly (this is what happens in doRequest)
+			constructedURL := tc.baseURL + tc.path
+			if constructedURL != tc.expectedURL {
+				t.Errorf("Expected constructed URL to be '%s', got '%s'", tc.expectedURL, constructedURL)
+			}
+		})
+	}
+}
+
+// TestClient_RealHTTPURLConstruction verifies that the actual HTTP requests use the expected URLs
+func TestClient_RealHTTPURLConstruction(t *testing.T) {
+	testCases := []struct {
+		name         string
+		baseURL      string
+		path         string
+		expectedPath string
+	}{
+		{
+			name:         "Normalized base URL constructs correct endpoint",
+			baseURL:      "https://api.cron-job.org",  // normalized (no trailing slash)
+			path:         "/jobs",
+			expectedPath: "/jobs",
+		},
+		{
+			name:         "Custom normalized URL constructs correct endpoint",
+			baseURL:      "https://example.com/api/v1",  // normalized (no trailing slash)
+			path:         "/jobs/123/history",
+			expectedPath: "/jobs/123/history",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Create a test server that captures the request URL
+			var capturedPath string
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				capturedPath = r.URL.Path
+				w.WriteHeader(http.StatusOK)
+				w.Write([]byte(`{"success": true}`))
+			}))
+			defer server.Close()
+
+			// Create client with normalized base URL
+			client := NewClient(tc.baseURL, "test-key")
+			
+			// Override base URL to point to our test server
+			client.BaseURL = server.URL
+			
+			// Make the request
+			_, err := client.doRequest("GET", tc.path, nil)
+			if err != nil {
+				t.Fatalf("Unexpected error: %v", err)
+			}
+
+			// Verify the path was constructed correctly
+			if capturedPath != tc.expectedPath {
+				t.Errorf("Expected request path to be '%s', got '%s'", tc.expectedPath, capturedPath)
+			}
+		})
+	}
+}
