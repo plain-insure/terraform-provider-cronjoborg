@@ -6,6 +6,7 @@ package provider
 import (
 	"context"
 	"os"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -18,7 +19,7 @@ func Provider() *schema.Provider {
 			"api_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "https://api.cron-job.org/",
+				Default:     "https://api.cron-job.org",
 				Description: "Base URL for the cron-job API.",
 			},
 			"api_key": {
@@ -46,6 +47,10 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	if !ok {
 		return nil, diag.Errorf("api_url must be a string")
 	}
+
+	// Normalize API URL by removing trailing slashes
+	apiUrl = strings.TrimRight(apiUrl, "/")
+
 	apiKey, ok := d.Get("api_key").(string)
 	if !ok {
 		return nil, diag.Errorf("api_key must be a string")
