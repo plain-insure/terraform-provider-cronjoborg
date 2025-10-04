@@ -12,6 +12,30 @@ import (
 	"github.com/plain-insure/terraform-provider-cronjoborg/client"
 )
 
+// suppressEquivalentScheduleArray treats empty arrays and [-1] as equivalent
+// This prevents Terraform from showing diffs when schedule fields are not specified
+func suppressEquivalentScheduleArray(k, old, new string, d *schema.ResourceData) bool {
+	// Get the old and new values as lists
+	oldVal, newVal := d.GetChange(k)
+
+	oldList, oldOk := oldVal.([]interface{})
+	newList, newOk := newVal.([]interface{})
+
+	// If either is not a list, don't suppress
+	if !oldOk || !newOk {
+		return false
+	}
+
+	// Check if old is empty or [-1]
+	oldIsDefault := len(oldList) == 0 || (len(oldList) == 1 && oldList[0].(int) == -1)
+
+	// Check if new is empty or [-1]
+	newIsDefault := len(newList) == 0 || (len(newList) == 1 && newList[0].(int) == -1)
+
+	// Suppress if both are default values
+	return oldIsDefault && newIsDefault
+}
+
 func resourceJob() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceJobCreate,
@@ -101,45 +125,50 @@ func resourceJob() *schema.Resource {
 							ValidateFunc: validation.IntAtLeast(0),
 						},
 						"hours": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "Hours in which to execute the job (0-23; [-1] = every hour)",
+							Type:             schema.TypeList,
+							Optional:         true,
+							Description:      "Hours in which to execute the job (0-23; [-1] = every hour)",
+							DiffSuppressFunc: suppressEquivalentScheduleArray,
 							Elem: &schema.Schema{
 								Type:         schema.TypeInt,
 								ValidateFunc: validation.IntBetween(-1, 23),
 							},
 						},
 						"mdays": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "Days of month in which to execute the job (1-31; [-1] = every day of month)",
+							Type:             schema.TypeList,
+							Optional:         true,
+							Description:      "Days of month in which to execute the job (1-31; [-1] = every day of month)",
+							DiffSuppressFunc: suppressEquivalentScheduleArray,
 							Elem: &schema.Schema{
 								Type:         schema.TypeInt,
 								ValidateFunc: validation.IntBetween(-1, 31),
 							},
 						},
 						"minutes": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "Minutes in which to execute the job (0-59; [-1] = every minute)",
+							Type:             schema.TypeList,
+							Optional:         true,
+							Description:      "Minutes in which to execute the job (0-59; [-1] = every minute)",
+							DiffSuppressFunc: suppressEquivalentScheduleArray,
 							Elem: &schema.Schema{
 								Type:         schema.TypeInt,
 								ValidateFunc: validation.IntBetween(-1, 59),
 							},
 						},
 						"months": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "Months in which to execute the job (1-12; [-1] = every month)",
+							Type:             schema.TypeList,
+							Optional:         true,
+							Description:      "Months in which to execute the job (1-12; [-1] = every month)",
+							DiffSuppressFunc: suppressEquivalentScheduleArray,
 							Elem: &schema.Schema{
 								Type:         schema.TypeInt,
 								ValidateFunc: validation.IntBetween(-1, 12),
 							},
 						},
 						"wdays": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "Days of week in which to execute the job (0=Sunday-6=Saturday; [-1] = every day of week)",
+							Type:             schema.TypeList,
+							Optional:         true,
+							Description:      "Days of week in which to execute the job (0=Sunday-6=Saturday; [-1] = every day of week)",
+							DiffSuppressFunc: suppressEquivalentScheduleArray,
 							Elem: &schema.Schema{
 								Type:         schema.TypeInt,
 								ValidateFunc: validation.IntBetween(-1, 6),
@@ -492,16 +521,24 @@ func resourceJobRead(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("error setting schedule: %w", err)
 	}
 
-	// Set auth
-	auth := []interface{}{
-		map[string]interface{}{
-			"enable":   jobDetails.Auth.Enable,
-			"user":     jobDetails.Auth.User,
-			"password": jobDetails.Auth.Password,
-		},
-	}
-	if err := d.Set("auth", auth); err != nil {
-		return fmt.Errorf("error setting auth: %w", err)
+	// Set auth only if it has non-default values
+	// Default is enable=false with empty user/password
+	if jobDetails.Auth.Enable || jobDetails.Auth.User != "" || jobDetails.Auth.Password != "" {
+		auth := []interface{}{
+			map[string]interface{}{
+				"enable":   jobDetails.Auth.Enable,
+				"user":     jobDetails.Auth.User,
+				"password": jobDetails.Auth.Password,
+			},
+		}
+		if err := d.Set("auth", auth); err != nil {
+			return fmt.Errorf("error setting auth: %w", err)
+		}
+	} else {
+		// Clear auth block if it's all defaults
+		if err := d.Set("auth", []interface{}{}); err != nil {
+			return fmt.Errorf("error clearing auth: %w", err)
+		}
 	}
 
 	// Set notification
@@ -516,15 +553,23 @@ func resourceJobRead(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("error setting notification: %w", err)
 	}
 
-	// Set extended_data
-	extendedData := []interface{}{
-		map[string]interface{}{
-			"headers": jobDetails.ExtendedData.Headers,
-			"body":    jobDetails.ExtendedData.Body,
-		},
-	}
-	if err := d.Set("extended_data", extendedData); err != nil {
-		return fmt.Errorf("error setting extended_data: %w", err)
+	// Set extended_data only if it has non-default values
+	// Default is empty headers and empty body
+	if len(jobDetails.ExtendedData.Headers) > 0 || jobDetails.ExtendedData.Body != "" {
+		extendedData := []interface{}{
+			map[string]interface{}{
+				"headers": jobDetails.ExtendedData.Headers,
+				"body":    jobDetails.ExtendedData.Body,
+			},
+		}
+		if err := d.Set("extended_data", extendedData); err != nil {
+			return fmt.Errorf("error setting extended_data: %w", err)
+		}
+	} else {
+		// Clear extended_data block if it's all defaults
+		if err := d.Set("extended_data", []interface{}{}); err != nil {
+			return fmt.Errorf("error clearing extended_data: %w", err)
+		}
 	}
 
 	return nil
