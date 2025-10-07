@@ -6,6 +6,7 @@ package provider
 import (
 	"fmt"
 	"net/url"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -458,6 +459,17 @@ func resourceJobCreate(d *schema.ResourceData, m interface{}) error {
 	return resourceJobRead(d, m)
 }
 
+// normalizeScheduleSlice converts a schedule slice that uses the API default sentinel [-1]
+// into an empty slice so Terraform does not plan perpetual diffs when the user
+// omitted that field. A user omission (empty) and API default ([-1]) are semantically
+// equivalent.
+func normalizeScheduleSlice(v []int) []int {
+	if len(v) == 1 && v[0] == -1 {
+		return []int{}
+	}
+	return v
+}
+
 func resourceJobRead(d *schema.ResourceData, m interface{}) error {
 	c, ok := m.(*client.Client)
 	if !ok {
@@ -505,16 +517,17 @@ func resourceJobRead(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("error setting request_method: %w", err)
 	}
 
-	// Set schedule
+	// Set schedule transforming API sentinels [-1] into empty slices so they
+	// compare equal with omitted configuration.
 	schedule := []interface{}{
 		map[string]interface{}{
 			"timezone":   jobDetails.Schedule.Timezone,
 			"expires_at": jobDetails.Schedule.ExpiresAt,
-			"hours":      jobDetails.Schedule.Hours,
-			"mdays":      jobDetails.Schedule.MDays,
-			"minutes":    jobDetails.Schedule.Minutes,
-			"months":     jobDetails.Schedule.Months,
-			"wdays":      jobDetails.Schedule.WDays,
+			"hours":      normalizeScheduleSlice(jobDetails.Schedule.Hours),
+			"mdays":      normalizeScheduleSlice(jobDetails.Schedule.MDays),
+			"minutes":    normalizeScheduleSlice(jobDetails.Schedule.Minutes),
+			"months":     normalizeScheduleSlice(jobDetails.Schedule.Months),
+			"wdays":      normalizeScheduleSlice(jobDetails.Schedule.WDays),
 		},
 	}
 	if err := d.Set("schedule", schedule); err != nil {
@@ -523,12 +536,13 @@ func resourceJobRead(d *schema.ResourceData, m interface{}) error {
 
 	// Set auth only if it has non-default values
 	// Default is enable=false with empty user/password
-	if jobDetails.Auth.Enable || jobDetails.Auth.User != "" || jobDetails.Auth.Password != "" {
+	// Treat whitespace-only user/password as empty.
+	if jobDetails.Auth.Enable || strings.TrimSpace(jobDetails.Auth.User) != "" || strings.TrimSpace(jobDetails.Auth.Password) != "" {
 		auth := []interface{}{
 			map[string]interface{}{
 				"enable":   jobDetails.Auth.Enable,
-				"user":     jobDetails.Auth.User,
-				"password": jobDetails.Auth.Password,
+				"user":     strings.TrimSpace(jobDetails.Auth.User),
+				"password": strings.TrimSpace(jobDetails.Auth.Password),
 			},
 		}
 		if err := d.Set("auth", auth); err != nil {
@@ -555,11 +569,12 @@ func resourceJobRead(d *schema.ResourceData, m interface{}) error {
 
 	// Set extended_data only if it has non-default values
 	// Default is empty headers and empty body
-	if len(jobDetails.ExtendedData.Headers) > 0 || jobDetails.ExtendedData.Body != "" {
+	bodyTrimmed := strings.TrimSpace(jobDetails.ExtendedData.Body)
+	if len(jobDetails.ExtendedData.Headers) > 0 || bodyTrimmed != "" {
 		extendedData := []interface{}{
 			map[string]interface{}{
 				"headers": jobDetails.ExtendedData.Headers,
-				"body":    jobDetails.ExtendedData.Body,
+				"body":    bodyTrimmed,
 			},
 		}
 		if err := d.Set("extended_data", extendedData); err != nil {
