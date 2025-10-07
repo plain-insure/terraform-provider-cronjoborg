@@ -6,11 +6,47 @@ package provider
 import (
 	"fmt"
 	"net/url"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/plain-insure/terraform-provider-cronjoborg/client"
 )
+
+// suppressEquivalentScheduleArray treats empty arrays and [-1] as equivalent
+// This prevents Terraform from showing diffs when schedule fields are not specified.
+func suppressEquivalentScheduleArray(k, oldStr, newStr string, d *schema.ResourceData) bool {
+	// Get the old and new values as lists
+	oldVal, newVal := d.GetChange(k)
+
+	oldList, oldOk := oldVal.([]interface{})
+	newList, newOk := newVal.([]interface{})
+
+	// If either is not a list, don't suppress
+	if !oldOk || !newOk {
+		return false
+	}
+
+	// Helper to determine if list represents default
+	isDefault := func(list []interface{}) bool {
+		if len(list) == 0 {
+			return true
+		}
+		if len(list) == 1 {
+			if v, ok := list[0].(int); ok && v == -1 {
+				return true
+			}
+		}
+		return false
+	}
+
+	// Check if old/new are empty or sentinel [-1]
+	oldIsDefault := isDefault(oldList)
+	newIsDefault := isDefault(newList)
+
+	// Suppress if both are default values
+	return oldIsDefault && newIsDefault
+}
 
 func resourceJob() *schema.Resource {
 	return &schema.Resource{
@@ -101,45 +137,50 @@ func resourceJob() *schema.Resource {
 							ValidateFunc: validation.IntAtLeast(0),
 						},
 						"hours": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "Hours in which to execute the job (0-23; [-1] = every hour)",
+							Type:             schema.TypeList,
+							Optional:         true,
+							Description:      "Hours in which to execute the job (0-23; [-1] = every hour)",
+							DiffSuppressFunc: suppressEquivalentScheduleArray,
 							Elem: &schema.Schema{
 								Type:         schema.TypeInt,
 								ValidateFunc: validation.IntBetween(-1, 23),
 							},
 						},
 						"mdays": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "Days of month in which to execute the job (1-31; [-1] = every day of month)",
+							Type:             schema.TypeList,
+							Optional:         true,
+							Description:      "Days of month in which to execute the job (1-31; [-1] = every day of month)",
+							DiffSuppressFunc: suppressEquivalentScheduleArray,
 							Elem: &schema.Schema{
 								Type:         schema.TypeInt,
 								ValidateFunc: validation.IntBetween(-1, 31),
 							},
 						},
 						"minutes": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "Minutes in which to execute the job (0-59; [-1] = every minute)",
+							Type:             schema.TypeList,
+							Optional:         true,
+							Description:      "Minutes in which to execute the job (0-59; [-1] = every minute)",
+							DiffSuppressFunc: suppressEquivalentScheduleArray,
 							Elem: &schema.Schema{
 								Type:         schema.TypeInt,
 								ValidateFunc: validation.IntBetween(-1, 59),
 							},
 						},
 						"months": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "Months in which to execute the job (1-12; [-1] = every month)",
+							Type:             schema.TypeList,
+							Optional:         true,
+							Description:      "Months in which to execute the job (1-12; [-1] = every month)",
+							DiffSuppressFunc: suppressEquivalentScheduleArray,
 							Elem: &schema.Schema{
 								Type:         schema.TypeInt,
 								ValidateFunc: validation.IntBetween(-1, 12),
 							},
 						},
 						"wdays": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "Days of week in which to execute the job (0=Sunday-6=Saturday; [-1] = every day of week)",
+							Type:             schema.TypeList,
+							Optional:         true,
+							Description:      "Days of week in which to execute the job (0=Sunday-6=Saturday; [-1] = every day of week)",
+							DiffSuppressFunc: suppressEquivalentScheduleArray,
 							Elem: &schema.Schema{
 								Type:         schema.TypeInt,
 								ValidateFunc: validation.IntBetween(-1, 6),
@@ -429,6 +470,17 @@ func resourceJobCreate(d *schema.ResourceData, m interface{}) error {
 	return resourceJobRead(d, m)
 }
 
+// normalizeScheduleSlice converts a schedule slice that uses the API default sentinel [-1]
+// into an empty slice so Terraform does not plan perpetual diffs when the user
+// omitted that field. A user omission (empty) and API default ([-1]) are semantically
+// equivalent.
+func normalizeScheduleSlice(v []int) []int {
+	if len(v) == 1 && v[0] == -1 {
+		return []int{}
+	}
+	return v
+}
+
 func resourceJobRead(d *schema.ResourceData, m interface{}) error {
 	c, ok := m.(*client.Client)
 	if !ok {
@@ -476,32 +528,42 @@ func resourceJobRead(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("error setting request_method: %w", err)
 	}
 
-	// Set schedule
+	// Set schedule transforming API sentinels [-1] into empty slices so they
+	// compare equal with omitted configuration.
 	schedule := []interface{}{
 		map[string]interface{}{
 			"timezone":   jobDetails.Schedule.Timezone,
 			"expires_at": jobDetails.Schedule.ExpiresAt,
-			"hours":      jobDetails.Schedule.Hours,
-			"mdays":      jobDetails.Schedule.MDays,
-			"minutes":    jobDetails.Schedule.Minutes,
-			"months":     jobDetails.Schedule.Months,
-			"wdays":      jobDetails.Schedule.WDays,
+			"hours":      normalizeScheduleSlice(jobDetails.Schedule.Hours),
+			"mdays":      normalizeScheduleSlice(jobDetails.Schedule.MDays),
+			"minutes":    normalizeScheduleSlice(jobDetails.Schedule.Minutes),
+			"months":     normalizeScheduleSlice(jobDetails.Schedule.Months),
+			"wdays":      normalizeScheduleSlice(jobDetails.Schedule.WDays),
 		},
 	}
 	if err := d.Set("schedule", schedule); err != nil {
 		return fmt.Errorf("error setting schedule: %w", err)
 	}
 
-	// Set auth
-	auth := []interface{}{
-		map[string]interface{}{
-			"enable":   jobDetails.Auth.Enable,
-			"user":     jobDetails.Auth.User,
-			"password": jobDetails.Auth.Password,
-		},
-	}
-	if err := d.Set("auth", auth); err != nil {
-		return fmt.Errorf("error setting auth: %w", err)
+	// Set auth only if it has non-default values
+	// Default is enable=false with empty user/password
+	// Treat whitespace-only user/password as empty.
+	if jobDetails.Auth.Enable || strings.TrimSpace(jobDetails.Auth.User) != "" || strings.TrimSpace(jobDetails.Auth.Password) != "" {
+		auth := []interface{}{
+			map[string]interface{}{
+				"enable":   jobDetails.Auth.Enable,
+				"user":     strings.TrimSpace(jobDetails.Auth.User),
+				"password": strings.TrimSpace(jobDetails.Auth.Password),
+			},
+		}
+		if err := d.Set("auth", auth); err != nil {
+			return fmt.Errorf("error setting auth: %w", err)
+		}
+	} else {
+		// Clear auth block if it's all defaults
+		if err := d.Set("auth", []interface{}{}); err != nil {
+			return fmt.Errorf("error clearing auth: %w", err)
+		}
 	}
 
 	// Set notification
@@ -516,15 +578,24 @@ func resourceJobRead(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("error setting notification: %w", err)
 	}
 
-	// Set extended_data
-	extendedData := []interface{}{
-		map[string]interface{}{
-			"headers": jobDetails.ExtendedData.Headers,
-			"body":    jobDetails.ExtendedData.Body,
-		},
-	}
-	if err := d.Set("extended_data", extendedData); err != nil {
-		return fmt.Errorf("error setting extended_data: %w", err)
+	// Set extended_data only if it has non-default values
+	// Default is empty headers and empty body
+	bodyTrimmed := strings.TrimSpace(jobDetails.ExtendedData.Body)
+	if len(jobDetails.ExtendedData.Headers) > 0 || bodyTrimmed != "" {
+		extendedData := []interface{}{
+			map[string]interface{}{
+				"headers": jobDetails.ExtendedData.Headers,
+				"body":    bodyTrimmed,
+			},
+		}
+		if err := d.Set("extended_data", extendedData); err != nil {
+			return fmt.Errorf("error setting extended_data: %w", err)
+		}
+	} else {
+		// Clear extended_data block if it's all defaults
+		if err := d.Set("extended_data", []interface{}{}); err != nil {
+			return fmt.Errorf("error clearing extended_data: %w", err)
+		}
 	}
 
 	return nil
