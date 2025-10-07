@@ -14,8 +14,8 @@ import (
 )
 
 // suppressEquivalentScheduleArray treats empty arrays and [-1] as equivalent
-// This prevents Terraform from showing diffs when schedule fields are not specified
-func suppressEquivalentScheduleArray(k, old, new string, d *schema.ResourceData) bool {
+// This prevents Terraform from showing diffs when schedule fields are not specified.
+func suppressEquivalentScheduleArray(k, oldStr, newStr string, d *schema.ResourceData) bool {
 	// Get the old and new values as lists
 	oldVal, newVal := d.GetChange(k)
 
@@ -27,11 +27,22 @@ func suppressEquivalentScheduleArray(k, old, new string, d *schema.ResourceData)
 		return false
 	}
 
-	// Check if old is empty or [-1]
-	oldIsDefault := len(oldList) == 0 || (len(oldList) == 1 && oldList[0].(int) == -1)
+	// Helper to determine if list represents default
+	isDefault := func(list []interface{}) bool {
+		if len(list) == 0 {
+			return true
+		}
+		if len(list) == 1 {
+			if v, ok := list[0].(int); ok && v == -1 {
+				return true
+			}
+		}
+		return false
+	}
 
-	// Check if new is empty or [-1]
-	newIsDefault := len(newList) == 0 || (len(newList) == 1 && newList[0].(int) == -1)
+	// Check if old/new are empty or sentinel [-1]
+	oldIsDefault := isDefault(oldList)
+	newIsDefault := isDefault(newList)
 
 	// Suppress if both are default values
 	return oldIsDefault && newIsDefault

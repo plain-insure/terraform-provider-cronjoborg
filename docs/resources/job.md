@@ -117,8 +117,3 @@ Optional:
 - `timezone` (String) Schedule time zone
 - `wdays` (List of Number) Days of week in which to execute the job (0=Sunday-6=Saturday; [-1] = every day of week)
 
-Note: The provider normalizes API default sentinel values of `[-1]` for schedule list
-attributes back to empty lists (`[]`) in state. This prevents perpetual diffs when
-the configuration omits those optional attributes. Supplying either `[]` or `[-1]`
-is treated equivalently.
-

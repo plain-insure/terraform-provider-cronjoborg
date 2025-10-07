@@ -4,6 +4,7 @@
 package provider
 
 import (
+	"os"
 	"strings"
 	"testing"
 
@@ -103,6 +104,11 @@ func TestProvider_Configure(t *testing.T) {
 
 func TestProvider_ConfigureMissingAPIKey(t *testing.T) {
 	p := Provider()
+
+	// Ensure environment variable does not mask missing configuration in test
+	prev := os.Getenv("CRON_JOB_API_KEY")
+	_ = os.Unsetenv("CRON_JOB_API_KEY")
+	defer func() { _ = os.Setenv("CRON_JOB_API_KEY", prev) }()
 
 	// Create test resource data without API key
 	d := schema.TestResourceDataRaw(t, p.Schema, map[string]interface{}{

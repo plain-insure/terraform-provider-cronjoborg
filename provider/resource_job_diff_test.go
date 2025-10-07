@@ -89,11 +89,23 @@ func TestSuppressEquivalentScheduleArray(t *testing.T) {
 			oldList := tt.oldVal
 			newList := tt.newVal
 
+			isDefault := func(list []interface{}) bool {
+				if len(list) == 0 {
+					return true
+				}
+				if len(list) == 1 {
+					if v, ok := list[0].(int); ok && v == -1 {
+						return true
+					}
+				}
+				return false
+			}
+
 			// Check if old is empty or [-1]
-			oldIsDefault := len(oldList) == 0 || (len(oldList) == 1 && oldList[0].(int) == -1)
+			oldIsDefault := isDefault(oldList)
 
 			// Check if new is empty or [-1]
-			newIsDefault := len(newList) == 0 || (len(newList) == 1 && newList[0].(int) == -1)
+			newIsDefault := isDefault(newList)
 
 			// Suppress if both are default values
 			result := oldIsDefault && newIsDefault
